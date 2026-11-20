@@ -156,6 +156,18 @@ func bindAll(w webview.WebView) {
 	bind(w, "nm_ai_new", func() (string, error) { return nmAINew() })
 	bind(w, "nm_ai_ask", func(text, model string) (string, error) { return nmAIAsk(text, model) })
 
+	bind(w, "nm_discord_setup", func(clientID, asset string) (string, error) {
+		if err := discordSave(clientID, asset); err != nil {
+			return "", err
+		}
+		return discordStatus(), nil
+	})
+	bind(w, "nm_discord_status", func() (string, error) { return discordStatus(), nil })
+	bind(w, "nm_discord_activity", func(project, language, file string, started int64) (string, error) {
+		discordSetActivity(project, language, file, started)
+		return "ok", nil
+	})
+
 	bind(w, "nm_lightning", func(enable bool) (string, error) {
 		exe, err := os.Executable()
 		if err != nil {
@@ -312,6 +324,11 @@ func main() {
 	w.SetTitle("NeoMind — Notes")
 	w.SetSize(1180, 760, webview.HintMin)
 	bindAll(w)
+	discordLoad()
+	if os.Getenv("NEOMIND_LIGHT") == "1" {
+		discordDisable()
+	}
+	go discord.run()
 	if debug {
 		bind(w, "nm_report", func(msg string) (string, error) {
 			log.Println("GUI JS:", msg)

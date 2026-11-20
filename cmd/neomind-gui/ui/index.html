@@ -387,7 +387,7 @@
   .win-actions button:hover{background:var(--hover);color:var(--text)}
   body.light-mode .status,body.light-mode .welcome,body.light-mode .palette,
   body.light-mode #actLangs,body.light-mode #actMods,body.light-mode #actSearch,
-  body.light-mode #actFolder,body.light-mode #actAI,body.light-mode #minimap{display:none !important}
+  body.light-mode #actFolder,body.light-mode #actAI,body.light-mode #actDiscord,body.light-mode #minimap{display:none !important}
   .ai-view{display:flex;flex-direction:column;height:100%;min-height:0}
   .ai-log{flex:1;min-height:0;overflow-y:auto;padding:8px 10px;display:flex;flex-direction:column;gap:8px}
   .ai-msg{padding:7px 9px;border:1px solid var(--border);border-radius:5px;background:var(--editor);font-size:12px;line-height:1.45;white-space:pre-wrap;word-break:break-word;user-select:text}
@@ -420,6 +420,7 @@
     <button class="act" id="actSearch" title="Search (Ctrl+F)"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l5 5"/></svg></button>
     <button class="act" id="actLangs" title="Languages &amp; toolchains"><svg viewBox="0 0 24 24"><path d="M4 7l8-4 8 4-8 4-8-4z"/><path d="M4 7v10l8 4 8-4V7"/><path d="M12 11v8"/><path d="M9 16l3 3 3-3"/></svg></button>
     <button class="act" id="actMods" title="Mods &amp; themes"><svg viewBox="0 0 24 24"><path d="M10 4h5v3a2 2 0 1 0 4 0V4h1v6h-3a2 2 0 1 0 0 4h3v6h-6v-3a2 2 0 1 0-4 0v3H4v-6h3a2 2 0 1 0 0-4H4V4z"/></svg></button>
+    <button class="act bottom" id="actDiscord" data-i18n-title="discord" title="Discord Rich Presence"><svg viewBox="0 0 24 24"><path d="M19.5 5.3A17 17 0 0 0 15.2 4l-.3.6a12 12 0 0 1 3.6 1.8 13 13 0 0 0-11 0A12 12 0 0 1 11.1 4L10.8 3a17 17 0 0 0-4.3 1.3C3.7 9 3 12.6 3.3 16.2a17 17 0 0 0 5.1 2.6l1.1-1.8a11 11 0 0 1-1.7-.8l.4-.3a12 12 0 0 0 10.4 0l.4.3a11 11 0 0 1-1.7.8l1.1 1.8a17 17 0 0 0 5.1-2.6c.4-4.2-.7-7.7-2.9-10.9zM9.3 14.3c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm5.4 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2z"/></svg></button>
     <button class="act bottom" id="actFolder" title="Open data folder"><svg viewBox="0 0 24 24"><path d="M4 6h6l2 2h8v10H4z"/></svg></button>
   </div>
 
@@ -665,6 +666,23 @@
     <label id="projectDlgNameLbl">Project name</label>
     <input id="projectDlgName" placeholder="My project" spellcheck="false">
     <div class="foot"><button id="projectDlgNo">Cancel</button><button class="ok" id="projectDlgYes">Create</button></div>
+  </div>
+</div>
+
+<div class="veil hidden" id="discordDialog">
+  <div class="dialog">
+    <div class="head" data-i18n="discordTitle">Discord Rich Presence</div>
+    <div class="body" data-i18n="discordHint">Create an app at the Discord Developer Portal, upload your icon, then paste its Application ID here.</div>
+    <label data-i18n="discordId">Application ID</label>
+    <input id="discordId" placeholder="123456789012345678" spellcheck="false">
+    <label data-i18n="discordAsset">Icon asset key</label>
+    <input id="discordAsset" placeholder="neomind_icon" spellcheck="false">
+    <div class="body" id="discordStatus"></div>
+    <div class="foot">
+      <button id="discordPortal" data-i18n="discordPortal">Developer Portal</button>
+      <button id="discordNo" data-i18n="cancel">Cancel</button>
+      <button class="ok" id="discordYes" data-i18n="discordSave">Save</button>
+    </div>
   </div>
 </div>
 
@@ -1194,6 +1212,44 @@ I18N.zh.aiError='AI 不可用。请确认已安装并登录 OpenCode。';
 I18N.ja.aiError='AI を利用できません。OpenCode がインストールされ、ログイン済みですか？';
 I18N.en.you='You'; I18N.ru.you='Вы'; I18N.uk.you='Ви'; I18N.es.you='Tú';
 I18N.de.you='Du'; I18N.fr.you='Vous'; I18N.zh.you='你'; I18N.ja.you='あなた';
+I18N.en.discord='Discord Rich Presence'; I18N.ru.discord='Discord RPC'; I18N.uk.discord='Discord RPC';
+I18N.es.discord='Discord Rich Presence'; I18N.de.discord='Discord Rich Presence'; I18N.fr.discord='Discord Rich Presence';
+I18N.zh.discord='Discord 状态'; I18N.ja.discord='Discord ステータス';
+I18N.en.discordTitle='Discord Rich Presence'; I18N.ru.discordTitle='Discord RPC'; I18N.uk.discordTitle='Discord RPC';
+I18N.es.discordTitle='Discord Rich Presence'; I18N.de.discordTitle='Discord Rich Presence'; I18N.fr.discordTitle='Discord Rich Presence';
+I18N.zh.discordTitle='Discord 状态设置'; I18N.ja.discordTitle='Discord ステータス設定';
+I18N.en.discordHint='Create an app in the Discord Developer Portal, upload your icon, then paste its Application ID here.';
+I18N.ru.discordHint='Создайте приложение в Discord Developer Portal, загрузите иконку и вставьте его Application ID.';
+I18N.uk.discordHint='Створіть застосунок у Discord Developer Portal, завантажте іконку та вставте його Application ID.';
+I18N.es.discordHint='Crea una app en el portal de Discord, sube tu icono y pega aquí su Application ID.';
+I18N.de.discordHint='Erstelle eine App im Discord-Entwicklerportal, lade dein Icon hoch und füge die Application ID ein.';
+I18N.fr.discordHint='Créez une application sur le portail Discord, téléversez votre icône, puis collez son Application ID.';
+I18N.zh.discordHint='在 Discord 开发者门户创建应用、上传图标，然后粘贴 Application ID。';
+I18N.ja.discordHint='Discord 開発者ポータルでアプリを作成し、アイコンをアップロードして Application ID を貼り付けてください。';
+I18N.en.discordId='Application ID'; I18N.ru.discordId='Application ID'; I18N.uk.discordId='Application ID';
+I18N.es.discordId='Application ID'; I18N.de.discordId='Application ID'; I18N.fr.discordId='Application ID';
+I18N.zh.discordId='Application ID'; I18N.ja.discordId='Application ID';
+I18N.en.discordAsset='Icon asset key'; I18N.ru.discordAsset='Ключ иконки'; I18N.uk.discordAsset='Ключ іконки';
+I18N.es.discordAsset='Clave del icono'; I18N.de.discordAsset='Icon-Asset-Schlüssel'; I18N.fr.discordAsset='Clé de l’icône';
+I18N.zh.discordAsset='图标资源键'; I18N.ja.discordAsset='アイコンのアセットキー';
+I18N.en.discordPortal='Developer Portal'; I18N.ru.discordPortal='Портал разработчика'; I18N.uk.discordPortal='Портал розробника';
+I18N.es.discordPortal='Portal de desarrolladores'; I18N.de.discordPortal='Entwicklerportal'; I18N.fr.discordPortal='Portail développeur';
+I18N.zh.discordPortal='开发者门户'; I18N.ja.discordPortal='開発者ポータル';
+I18N.en.discordSave='Save'; I18N.ru.discordSave='Сохранить'; I18N.uk.discordSave='Зберегти';
+I18N.es.discordSave='Guardar'; I18N.de.discordSave='Speichern'; I18N.fr.discordSave='Enregistrer';
+I18N.zh.discordSave='保存'; I18N.ja.discordSave='保存';
+I18N.en.discordOn='Connected · showing your project and language'; I18N.ru.discordOn='Подключено · проект и язык отображаются';
+I18N.uk.discordOn='Підключено · проєкт і мову відображаються'; I18N.es.discordOn='Conectado · proyecto e idioma visibles';
+I18N.de.discordOn='Verbunden · Projekt und Sprache sichtbar'; I18N.fr.discordOn='Connecté · projet et langue affichés';
+I18N.zh.discordOn='已连接 · 正在显示项目和语言'; I18N.ja.discordOn='接続中 · プロジェクトと言語を表示中';
+I18N.en.discordOff='Not connected — open Discord, then save a valid Application ID.';
+I18N.ru.discordOff='Нет подключения — откройте Discord и сохраните корректный Application ID.';
+I18N.uk.discordOff='Немає підключення — відкрийте Discord і збережіть правильний Application ID.';
+I18N.es.discordOff='Sin conexión: abre Discord y guarda un Application ID válido.';
+I18N.de.discordOff='Nicht verbunden — Discord öffnen und gültige Application ID speichern.';
+I18N.fr.discordOff='Non connecté — ouvrez Discord puis enregistrez un Application ID valide.';
+I18N.zh.discordOff='未连接 — 请打开 Discord 并保存有效的 Application ID。';
+I18N.ja.discordOff='未接続 — Discord を開き、有効な Application ID を保存してください。';
 let uiLocale=localStorage.getItem('nm_locale')||'en';
 if(!SUPPORTED_LOCALES.includes(uiLocale))uiLocale='en';
 function t(key,vars){
@@ -1205,6 +1261,7 @@ const I18N_NODES={
  actFiles:['title','act.explorer'],actFolders:['title','act.folders'],actSearch:['title','act.search'],
  actLangs:['title','act.languages'],actMods:['title','act.mods'],actFolder:['title','act.openData'],
  actAI:['title','ai'],aiNew:['title','aiNew'],aiSend:['title','aiSend'],aiInput:['placeholder','aiPlaceholder'],
+ actDiscord:['title','discord'],discordNo:['text','cancel'],discordYes:['text','discordSave'],discordPortal:['text','discordPortal'],
  newBtn:['title','newFileShortcut'],newTop:['title','newFileShortcut'],folderNew:['title','newProject'],
  folderFileNew:['title','newFile'],sortBtn:['title','sort'],tabClose:['title','close'],
  search:['placeholder','filter'],folderFilter:['placeholder','filterFolders'],
@@ -2214,11 +2271,11 @@ function select(id,noFocus){
   crumbForView(currentView);
   showEditor(true);
   $('saved').textContent=''; $('tabDirty').classList.add('hidden');
-  lineNumbers(); updatePos(); markSelected();
+  lineNumbers(); updatePos(); markSelected(); discordPush();
   if(!noFocus){textEl.focus();textEl.setSelectionRange(0,0);}
 }
 function closeEditor(){
-  flushSave(false);selected=null;showEditor(false);markSelected();renderFolderTree();crumbForView(currentView);
+  flushSave(false);selected=null;showEditor(false);markSelected();renderFolderTree();crumbForView(currentView);discordPush();
 }
 function setDirty(){
   $('saved').textContent=t('unsaved'); $('tabDirty').classList.remove('hidden');
@@ -2347,6 +2404,7 @@ $('langMode').onchange=()=>{
     else localStorage.setItem('nm_lang_'+String(selected),v);
   }
   refreshHighlight();
+  discordPush();
   message(t('syntax',{name:$('langMode').selectedOptions[0].textContent}));
 };
 $('minimap').onmousedown=e=>{e.preventDefault();miniDrag=true;miniScroll(e);};
@@ -2445,6 +2503,49 @@ document.onkeydown=e=>{
 if(window.nm_report){
   window.onerror=(msg,src,line,col)=>{nm_report('JS ERROR '+msg+' @'+line+':'+col);};
 }
+let codingStart=Date.now(), discordTimer=null;
+function discordPush(){
+  if(lightMode||!window.nm_discord_activity)return;
+  const n=selected!==null?notes.find(x=>keyOf(x)===selected):null;
+  const project=n?folderLabel(noteFolder(n)):'NeoMind';
+  const langId=activeLang();
+  const language=(LANGS[langId]&&LANGS[langId].name)||langId;
+  try{nm_discord_activity(project,language,n?noteName(n):'',codingStart).catch(()=>{});}catch(e){}
+}
+async function refreshDiscordStatus(){
+  try{
+    const s=JSON.parse(await nm_discord_status());
+    $('discordStatus').textContent=s.connected?t('discordOn'):t('discordOff');
+  }catch(e){$('discordStatus').textContent=t('discordOff');}
+}
+async function openDiscordDialog(){
+  $('discordDialog').classList.remove('hidden');
+  try{
+    const s=JSON.parse(await nm_discord_status());
+    $('discordId').value=s.client_id||'';
+    $('discordAsset').value=s.asset||'';
+  }catch(e){}
+  refreshDiscordStatus();
+  clearInterval(discordTimer);
+  discordTimer=setInterval(refreshDiscordStatus,4000);
+}
+function closeDiscordDialog(){
+  $('discordDialog').classList.add('hidden');
+  clearInterval(discordTimer);discordTimer=null;
+}
+async function saveDiscord(){
+  try{
+    await nm_discord_setup($('discordId').value.trim(),$('discordAsset').value.trim());
+    discordPush();
+    await refreshDiscordStatus();
+    message(t('savedMsg'));
+  }catch(e){fail(e);}
+}
+$('actDiscord').onclick=openDiscordDialog;
+$('discordNo').onclick=closeDiscordDialog;
+$('discordYes').onclick=saveDiscord;
+$('discordPortal').onclick=()=>{try{nm_mods_open('https://discord.com/developers/applications');}catch(e){fail(e);}};
+
 async function boot(){
   try{
     if(typeof nm_boot==='function'){
@@ -2469,7 +2570,7 @@ async function boot(){
     }
   }catch(e){}
   const sel=$('uiLang');if(sel)sel.value=uiLocale;
-  applyModClasses(); applyI18n(); load(); loadStatus();
+  applyModClasses(); applyI18n(); load(); loadStatus(); discordPush();
 }
 boot();
 </script>

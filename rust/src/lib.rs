@@ -8,7 +8,7 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-pub const VERSION: &str = "0.5.2";
+pub const VERSION: &str = "0.5.3";
 
 /// Data folder: %USERPROFILE%/.neomind on Windows, ~/.neomind on POSIX.
 /// NEOMIND_DATA_DIR redirects storage (tests, portable mode).
