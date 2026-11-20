@@ -251,7 +251,7 @@
   body.mod-compact .lang-card{padding:7px 10px}
   body.mod-compact .ex-card{padding:5px 10px}
   body.mod-no-line .gutter{display:none}
-  body.mod-no-line textarea{padding-left:26px}
+  body.mod-no-line textarea,body.mod-no-line .highlight{padding-left:26px}
   body.mod-wide .sidebar{width:380px!important}
   body.mod-mono,body.mod-mono input,body.mod-mono button{
     font-family:Consolas,"Cascadia Mono",monospace;
@@ -286,12 +286,35 @@
     padding:18px 12px 18px 0;text-align:right;color:#4a4a4a;font:13px/1.7 "Cascadia Mono",Consolas,monospace;
     white-space:pre;overflow:hidden;user-select:none;border-right:1px solid var(--border-soft)}
   textarea{
-    flex:1;width:100%;resize:none;background:var(--editor);border:0;outline:0;
+    position:relative;z-index:1;flex:1;width:100%;resize:none;
+    background:transparent;border:0;outline:0;
     padding:18px 26px 18px 68px;
     font:13px/1.7 "Cascadia Mono",Consolas,"Lucida Console",monospace;
-    color:var(--text);tab-size:2;
+    color:transparent;caret-color:var(--bright);tab-size:2;white-space:pre;
   }
   textarea::placeholder{color:var(--dim)}
+  textarea::selection{background:#264f78;color:transparent}
+  .highlight{
+    position:absolute;inset:0;z-index:0;margin:0;pointer-events:none;
+    padding:18px 26px 18px 68px;
+    font:13px/1.7 "Cascadia Mono",Consolas,"Lucida Console",monospace;
+    color:var(--text);tab-size:2;white-space:pre;overflow:hidden;
+  }
+  .tok-comment{color:#6a9955}
+  .tok-string{color:#ce9178}
+  .tok-number{color:#b5cea8}
+  .tok-keyword{color:#569cd6}
+  .tok-control{color:#c586c0}
+  .tok-type{color:#4ec9b0}
+  .tok-builtin,.tok-func{color:#dcdcaa}
+  .tok-prop{color:#9cdcfe}
+  .tok-op{color:#d4d4d4}
+  .status select{
+    background:transparent;border:0;outline:0;color:var(--muted);
+    font:11px "Segoe UI",system-ui,sans-serif;cursor:pointer;max-width:110px;
+  }
+  .status select:hover{color:var(--bright)}
+  .status select option{background:var(--panel);color:var(--text)}
   .welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
     gap:14px;color:var(--dim);text-align:center}
   .welcome .keys{font:12px "Cascadia Mono",Consolas,monospace;color:var(--muted);line-height:2}
@@ -466,7 +489,8 @@
 
     <div class="editorwrap" id="editorwrap">
       <div class="gutter hidden" id="gutter">1</div>
-      <textarea id="text" spellcheck="false" class="hidden" placeholder=""></textarea>
+      <pre class="highlight hidden" id="highlight" aria-hidden="true"></pre>
+      <textarea id="text" spellcheck="false" wrap="off" class="hidden" placeholder=""></textarea>
       <div class="welcome" id="welcome">
         <div class="keys">
           <div><b>Ctrl N</b> new note</div>
@@ -486,6 +510,22 @@
       </div>
       <div class="r">
         <span class="item" id="pos">Ln 1, Col 1</span>
+        <span class="item"><select id="langMode" title="Syntax highlighting language">
+          <option value="auto">Auto detect</option>
+          <option value="plaintext">Plain Text</option>
+          <option value="javascript">JavaScript</option>
+          <option value="typescript">TypeScript</option>
+          <option value="python">Python</option>
+          <option value="go">Go</option>
+          <option value="rust">Rust</option>
+          <option value="c">C</option>
+          <option value="cpp">C++</option>
+          <option value="html">HTML</option>
+          <option value="css">CSS</option>
+          <option value="json">JSON</option>
+          <option value="sql">SQL</option>
+          <option value="bash">Shell</option>
+        </select></span>
         <span class="item">UTF-8</span>
         <span class="item" id="saved"></span>
       </div>
@@ -551,6 +591,169 @@ function lineNumbers(){
   const n=textEl.value.split('\n').length;
   let s='';for(let i=1;i<=n;i++)s+=i+'\n';
   $('gutter').textContent=s;
+}
+
+/* ---------- syntax highlighting — VS Code Dark+ palette ---------- */
+const LANGS={
+  plaintext:{name:'Plain Text'},
+  javascript:{
+    keywords:['const','let','var','function','new','class','extends','implements','import','export','default','from','as','typeof','instanceof','in','of','this','super','void','delete','yield','get','set','static'],
+    control:['return','if','else','for','while','do','switch','case','break','continue','try','catch','finally','throw','await','async'],
+    types:['String','Number','Boolean','Object','Array','Promise','Map','Set','Date','RegExp','Error','JSON','Math','console','window','document'],
+    builtins:['true','false','null','undefined','NaN','Infinity'],
+    line:['//'],block:[['/*','*/']]},
+  typescript:{
+    keywords:['const','let','var','function','new','class','extends','implements','import','export','default','from','as','typeof','instanceof','in','of','this','super','void','interface','type','enum','readonly','public','private','protected','declare','namespace','keyof','infer','satisfies','static'],
+    control:['return','if','else','for','while','do','switch','case','break','continue','try','catch','finally','throw','await','async'],
+    types:['string','number','boolean','any','unknown','never','object','Array','Promise','Record','Partial','Pick','Omit','Readonly','console'],
+    builtins:['true','false','null','undefined','NaN'],
+    line:['//'],block:[['/*','*/']]},
+  python:{
+    keywords:['def','class','import','from','as','with','global','nonlocal','lambda','assert','del','is','not','and','or','in','pass','print','len','range','str','int','float','list','dict','set','tuple','open','super','self','enumerate','zip','map','filter'],
+    control:['return','if','elif','else','for','while','try','except','finally','raise','yield','break','continue','async','await'],
+    types:['True','False','None','Exception','ValueError','TypeError','Object','List','Dict','Optional'],
+    builtins:['true','false','null'],
+    line:['#'],block:[['"""','"""'],["'''","'''"]]},
+  go:{
+    keywords:['package','import','func','var','const','type','struct','interface','map','chan','go','defer','range','select','fallthrough','goto','make','new','len','cap','append','copy','delete','panic','recover','print','println'],
+    control:['if','else','for','return','switch','case','default','break','continue'],
+    types:['string','int','int8','int16','int32','int64','uint','uint8','uint16','uint32','uint64','uintptr','float32','float64','complex64','complex128','bool','byte','rune','error','any'],
+    builtins:['true','false','nil','iota'],
+    line:['//'],block:[['/*','*/']]},
+  rust:{
+    keywords:['fn','let','mut','const','static','struct','enum','impl','trait','for','in','use','mod','pub','crate','self','Self','as','where','move','ref','type','dyn','unsafe','extern','macro_rules','derive','match'],
+    control:['if','else','while','loop','return','break','continue','async','await'],
+    types:['String','str','Vec','Option','Result','Box','HashMap','HashSet','Rc','Arc','RefCell','i8','i16','i32','i64','i128','u8','u16','u32','u64','u128','usize','isize','f32','f64','bool','char'],
+    builtins:['true','false','None','Some','Ok','Err','println','format','vec'],
+    line:['//'],block:[['/*','*/']]},
+  c:{
+    keywords:['typedef','static','extern','const','volatile','struct','enum','union','sizeof','include','define','pragma','unsigned','signed','long','short','register','inline'],
+    control:['if','else','for','while','do','switch','case','default','break','continue','return','goto'],
+    types:['int','char','float','double','void','bool','size_t','FILE','uint8_t','uint32_t','int32_t'],
+    builtins:['true','false','NULL'],
+    line:['//'],block:[['/*','*/']]},
+  cpp:{
+    keywords:['class','namespace','template','typename','public','private','protected','virtual','override','final','new','delete','this','using','auto','constexpr','consteval','static_cast','dynamic_cast','reinterpret_cast','struct','enum','typedef','include','define','pragma'],
+    control:['if','else','for','while','do','switch','case','default','break','continue','return','try','catch','throw'],
+    types:['int','char','float','double','void','bool','string','vector','map','set','size_t','std','nullptr','uint8_t','uint32_t'],
+    builtins:['true','false','NULL'],
+    line:['//'],block:[['/*','*/']]},
+  html:{
+    keywords:['html','head','body','div','span','section','article','header','footer','nav','main','p','h1','h2','h3','h4','h5','h6','ul','ol','li','a','img','input','button','form','table','tr','td','th','script','style','link','meta','title','br','hr','svg','path'],
+    types:['DOCTYPE','class','id','href','src','type','value','name','style','width','height','viewBox','fill','stroke'],
+    builtins:['true','false'],line:[],block:[['<!--','-->']]},
+  css:{
+    keywords:['color','background','background-color','border','margin','padding','display','flex','grid','position','absolute','relative','width','height','font','font-size','line-height','opacity','overflow','z-index','top','left','right','bottom','transform','box-sizing','white-space','text-align'],
+    control:['@media','@keyframes','@import','@font-face'],
+    types:['red','blue','black','white','transparent','solid','dashed','none','block','inline','hidden','auto','center'],
+    builtins:['important'],line:[],block:[['/*','*/']]},
+  json:{
+    keywords:[],control:[],types:[],builtins:['true','false','null'],line:[],block:[]},
+  sql:{
+    keywords:['SELECT','FROM','WHERE','INSERT','INTO','VALUES','UPDATE','SET','DELETE','CREATE','TABLE','DROP','ALTER','JOIN','LEFT','RIGHT','INNER','OUTER','ON','GROUP','BY','ORDER','HAVING','LIMIT','OFFSET','AS','AND','OR','NOT','DISTINCT','COUNT','SUM','AVG','MIN','MAX','PRIMARY','KEY','FOREIGN','REFERENCES','DEFAULT','NULL'],
+    control:[],types:['INT','VARCHAR','TEXT','DATE','DATETIME','BOOLEAN','DECIMAL','FLOAT'],
+    builtins:['true','false','null'],line:['--'],block:[['/*','*/']]},
+  bash:{
+    keywords:['echo','cd','export','local','source','alias','printf','read','set','unset','shift','exit','return','function','sudo','apt','npm','git','cargo','go','mkdir','rm','cp','mv','cat'],
+    control:['if','then','else','elif','fi','for','do','done','while','case','esac','in','break','continue'],
+    types:[],builtins:['true','false'],line:['#'],block:[]}
+};
+const detectedLangs={};
+function detectLang(text){
+  const t=String(text||'').slice(0,5000);
+  if(/^\s*#!\s*\S*(python|py)/m.test(t))return 'python';
+  if(/^\s*#!\s*\S*(bash|sh|zsh)/m.test(t))return 'bash';
+  if(/^\s*#!\s*\S*node/m.test(t))return 'javascript';
+  if(/\bfn\s+main\s*\(|\blet\s+mut\b|\buse\s+std::/.test(t))return 'rust';
+  if(/\bpackage\s+main\b|\bfunc\s+\w+\s*\([^)]*\)|\bimport\s+\(/.test(t))return 'go';
+  if(/^\s*(def|class)\s+\w+\s*[:(]/m.test(t)||/\bself\b/.test(t))return 'python';
+  if(/^\s*(SELECT|INSERT|UPDATE|CREATE|DROP)\b/im.test(t))return 'sql';
+  if(/^\s*[{[]\s*"?\w+"?\s*:/m.test(t))return 'json';
+  if(/<\/?[a-z][^>]*>/i.test(t))return 'html';
+  if(/(interface|namespace|=>|interface\s+\w+)/.test(t))return 'typescript';
+  if(/(const|let|var)\s+\w+\s*[=:]|\bfunction\s+\w+\s*\(|=>/.test(t))return 'javascript';
+  if(/\b(include|typedef|int\s+\w+\s*;|char\s*\*)/.test(t))return 'c';
+  if(/[#.][\w-]+\s*\{[^{}]*:|\/\*/.test(t))return 'css';
+  if(/\b(echo|sudo|apt|npm|git)\b/.test(t))return 'bash';
+  return 'plaintext';
+}
+function activeLang(){
+  const mode=$('langMode').value;
+  if(mode!=='auto')return mode;
+  if(selected===null)return 'plaintext';
+  const key=String(selected), manual=localStorage.getItem('nm_lang_'+key);
+  if(manual&&LANGS[manual])return manual;
+  if(!detectedLangs[key])detectedLangs[key]=detectLang(textEl.value);
+  return detectedLangs[key];
+}
+function tokenize(code,langId){
+  const cfg=LANGS[langId]||LANGS.plaintext;
+  const kws=new Set(cfg.keywords||[]),ctr=new Set(cfg.control||[]),
+        tys=new Set(cfg.types||[]),bis=new Set(cfg.builtins||[]);
+  const out=[];let i=0;const n=code.length;
+  const put=(cls,s)=>out.push('<span class="tok-'+cls+'">'+esc(s)+'</span>');
+  while(i<n){
+    const c=code[i];
+    let hit=false;
+    for(const p of (cfg.line||[])){
+      if(code.startsWith(p,i)){
+        let j=code.indexOf('\n',i);if(j<0)j=n;
+        put('comment',code.slice(i,j));i=j;hit=true;break;
+      }
+    }
+    if(hit)continue;
+    for(const pair of (cfg.block||[])){
+      if(code.startsWith(pair[0],i)){
+        let j=code.indexOf(pair[1],i+pair[0].length);
+        j=j<0?n:j+pair[1].length;
+        put('comment',code.slice(i,j));i=j;hit=true;break;
+      }
+    }
+    if(hit)continue;
+    if(c==='"'||c==="'"||c==='`'){
+      let j=i+1;
+      while(j<n){
+        if(code[j]==='\\'){j+=2;continue;}
+        if(code[j]===c){j++;break;}
+        j++;
+      }
+      put('string',code.slice(i,j));i=j;continue;
+    }
+    if(/[0-9]/.test(c)){
+      let j=i;
+      while(j<n&&/[0-9a-fA-FxXoObB._eE]/.test(code[j]))j++;
+      if(code[j]==='+'||code[j]==='-'){if(/[eE]/.test(code[j-1]||''))j++;}
+      put('number',code.slice(i,j));i=j;continue;
+    }
+    if(/[A-Za-z_$]/.test(c)){
+      let j=i;while(j<n&&/[A-Za-z0-9_$]/.test(code[j]))j++;
+      const w=code.slice(i,j),up=w.toUpperCase();
+      let cls=null;
+      if(kws.has(w)||kws.has(up))cls='keyword';
+      else if(ctr.has(w)||ctr.has(up))cls='control';
+      else if(tys.has(w)||tys.has(up))cls='type';
+      else if(bis.has(w)||bis.has(up))cls='builtin';
+      else if(/^[A-Z]/.test(w))cls='type';
+      else if(code[j]==='(')cls='func';
+      else if(code[i-1]==='.')cls='prop';
+      if(cls)put(cls,w);else out.push(esc(w));
+      i=j;continue;
+    }
+    if(/[+\-*/%=<>!&|^~?:;,.()[\]{}]/.test(c)){
+      let j=i+1;
+      while(j<n&&j-i<3&&/[+\-*/%=<>!&|^~?:]/.test(code[j]))j++;
+      put('op',code.slice(i,j));i=j;continue;
+    }
+    out.push(esc(c));i++;
+  }
+  return out.join('');
+}
+function refreshHighlight(){
+  const pre=$('highlight');
+  if(textEl.classList.contains('hidden')){pre.classList.add('hidden');return;}
+  pre.classList.remove('hidden');
+  pre.innerHTML=tokenize(textEl.value,activeLang())+'\n';
+  pre.scrollTop=textEl.scrollTop;pre.scrollLeft=textEl.scrollLeft;
 }
 function updatePos(){
   const p=textEl.selectionStart||0;
@@ -904,9 +1107,11 @@ function render(){
 }
 function showEditor(show){
   textEl.classList.toggle('hidden',!show);
+  $('highlight').classList.toggle('hidden',!show);
   $('gutter').classList.toggle('hidden',!show);
   $('welcome').classList.toggle('hidden',show);
   $('tab').classList.toggle('hidden',!show);
+  if(show)refreshHighlight();
 }
 function select(id,noFocus){
   if(selected===id && !textEl.classList.contains('hidden')) return;
@@ -915,11 +1120,14 @@ function select(id,noFocus){
   if(!n)return;
   selected=id;
   textEl.value=n.text;
+  const chosen=localStorage.getItem('nm_lang_'+String(id));
+  $('langMode').value=(chosen&&LANGS[chosen])?chosen:'auto';
   $('tabName').textContent=titleOf(n.text);
   $('crumb').textContent=titleOf(n.text);
   showEditor(true);
   $('saved').textContent=''; $('tabDirty').classList.add('hidden');
-  lineNumbers(); updatePos(); render();
+  lineNumbers(); updatePos(); refreshHighlight(); render();
+  if(window.nm_report)nm_report('lang '+activeLang()+' tokens '+($('highlight').innerHTML.match(/tok-/g)||[]).length);
   if(!noFocus){textEl.focus();textEl.setSelectionRange(0,0);}
 }
 function closeEditor(){
@@ -927,7 +1135,7 @@ function closeEditor(){
 }
 function setDirty(){
   $('saved').textContent='unsaved'; $('tabDirty').classList.remove('hidden');
-  lineNumbers(); updatePos();
+  lineNumbers(); updatePos(); refreshHighlight();
   clearTimeout(saveTimer); saveTimer=setTimeout(()=>save(true),900);
 }
 function flushSave(reselect){
@@ -1024,7 +1232,19 @@ $('sortBtn').onclick=()=>{
 searchEl.oninput=render;
 textEl.oninput=setDirty;
 textEl.onclick=updatePos; textEl.onkeyup=updatePos; textEl.onselect=updatePos;
-textEl.onscroll=()=>{$('gutter').scrollTop=textEl.scrollTop;};
+textEl.onscroll=()=>{
+  $('gutter').scrollTop=textEl.scrollTop;
+  const pre=$('highlight');pre.scrollTop=textEl.scrollTop;pre.scrollLeft=textEl.scrollLeft;
+};
+$('langMode').onchange=()=>{
+  const v=$('langMode').value;
+  if(selected!==null){
+    if(v==='auto')localStorage.removeItem('nm_lang_'+String(selected));
+    else localStorage.setItem('nm_lang_'+String(selected),v);
+  }
+  refreshHighlight();
+  message('Syntax: '+$('langMode').selectedOptions[0].textContent);
+};
 $('actFiles').onclick=()=>{switchView('files');listEl.focus();};
 $('actSearch').onclick=()=>{
   if(currentView!=='files')switchView('files');
@@ -1095,6 +1315,9 @@ document.onkeydown=e=>{
   };
 })();
 
+if(window.nm_report){
+  window.onerror=(msg,src,line,col)=>{nm_report('JS ERROR '+msg+' @'+line+':'+col);};
+}
 applyModClasses(); load(); loadStatus(); loadLanguages(); loadTopMods(); loadCuratedMods();
 </script>
 </body>

@@ -170,6 +170,7 @@ func main() {
 
 	w := webview.New(false)
 	defer w.Destroy()
+	setWindowIcon(w, debug)
 	w.SetTitle("NeoMind — Notes")
 	w.SetSize(1180, 760, webview.HintMin)
 	bindAll(w)
