@@ -5,6 +5,10 @@ $root = Split-Path -Parent $PSScriptRoot
 $src = Join-Path $root 'dist'
 $dest = Join-Path $env:LOCALAPPDATA 'NeoMind'
 $files = @('neomind.exe', 'neomind-gui.exe', 'neomind-core.exe')
+if (Test-Path (Join-Path $root 'assets\neomind.ico')) {
+    Copy-Item -Force (Join-Path $root 'assets\neomind.ico') (Join-Path $src 'neomind.ico')
+    $files += 'neomind.ico'
+}
 
 foreach ($f in $files) {
     if (-not (Test-Path (Join-Path $src $f))) {
@@ -27,8 +31,22 @@ foreach ($where in $places) {
     $sc.TargetPath = Join-Path $dest 'neomind-gui.exe'
     $sc.WorkingDirectory = $dest
     $sc.Description = 'NeoMind - quick notes'
+    if ($files -contains 'neomind.ico') {
+        $sc.IconLocation = (Join-Path $dest 'neomind.ico') + ',0'
+    }
     $sc.Save()
 }
+
+# Force Explorer to drop cached icons for the shortcut/exe paths.
+Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+public static class ShellIcon {
+    [DllImport("shell32.dll")]
+    public static extern void SHChangeNotify(int eventId, uint flags, IntPtr item1, IntPtr item2);
+}
+'@
+[ShellIcon]::SHChangeNotify(0x08000000, 0x0000, [IntPtr]::Zero, [IntPtr]::Zero)
 
 $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
 if ($userPath -notlike "*$dest*") {

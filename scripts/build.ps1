@@ -22,6 +22,21 @@ $env:CC = $gcc
 $gpp = Join-Path $binDir 'g++.exe'
 if (Test-Path $gpp) { $env:CXX = $gpp }
 
+# --- GUI application icon: compile assets\neomind.ico into a Go .syso resource ---
+$ico = Join-Path $root 'assets\neomind.ico'
+$windres = Join-Path $binDir 'windres.exe'
+$syso = Join-Path $root 'cmd\neomind-gui\neomind_icon.syso'
+$rc = Join-Path $root 'cmd\neomind-gui\neomind_icon.rc'
+if ((Test-Path $ico) -and (Test-Path $windres)) {
+    $icoPath = ($ico -replace '\\', '/')
+    Set-Content -Path $rc -Value "1 ICON `"$icoPath`"" -Encoding ASCII
+    & $windres -i $rc -O coff -o $syso
+    if ($LASTEXITCODE -ne 0) { throw 'windres failed while embedding the application icon' }
+    Write-Host '==> embedded application icon'
+} else {
+    Write-Host '==> warning: ico or windres not found, GUI icon not embedded'
+}
+
 # --- Rust linker: use GNU toolchain when Visual Studio is absent ---
 $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
 $msvcReady = (Get-Command link.exe -ErrorAction SilentlyContinue) -or (Test-Path $vswhere)
@@ -53,6 +68,8 @@ try {
     Copy-Item -Force (Join-Path $root 'rust\target\release\neomind-core.exe') (Join-Path $dist 'neomind-core.exe')
 } finally {
     Pop-Location
+    if (Test-Path $rc) { Remove-Item $rc -Force }
+    if (Test-Path $syso) { Remove-Item $syso -Force }
 }
 
 Write-Host "NeoMind is ready: $dist\neomind.exe + neomind-gui.exe"
