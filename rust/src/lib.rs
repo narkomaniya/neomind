@@ -1,7 +1,7 @@
-//! neomind-core — ядро NeoMind на Rust.
+//! neomind-core — the Rust core of NeoMind.
 //!
-//! Никаких внешних зависимостей: хранилище заметок, JSON-answered команды
-//! и аккуратная работа с путями/ошибками. GUI и CLI только рисуют UX.
+//! No external dependencies: note storage, JSON-answered commands and careful
+//! path/error handling. The GUI and CLI only provide the UX.
 
 use std::fs::{self, OpenOptions};
 use std::io::Write;
@@ -10,8 +10,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 pub const VERSION: &str = "0.3.0";
 
-/// Папка данных: %USERPROFILE%/.neomind на Windows, ~/.neomind на POSIX.
-/// NEOMIND_DATA_DIR позволяет перенаправить хранилище (тесты, портативный режим).
+/// Data folder: %USERPROFILE%/.neomind on Windows, ~/.neomind on POSIX.
+/// NEOMIND_DATA_DIR redirects storage (tests, portable mode).
 pub fn data_dir() -> PathBuf {
     if let Some(p) = std::env::var_os("NEOMIND_DATA_DIR") {
         return PathBuf::from(p);
@@ -27,7 +27,7 @@ pub fn notes_path() -> PathBuf {
     data_dir().join("notes.txt")
 }
 
-/// Минимальный JSON-escape для строк (кавычки, слеши, управляющие символы).
+/// Minimal JSON escaping for strings (quotes, slashes, control characters).
 pub fn json_escape(s: &str) -> String {
     let mut out = String::with_capacity(s.len() + 2);
     for c in s.chars() {
@@ -44,8 +44,8 @@ pub fn json_escape(s: &str) -> String {
     out
 }
 
-/// Одна заметка. id — миллисекунды epoch; старые записи в секундах
-/// распознаются и превращаются в миллисекунды при показе.
+/// One note. id is epoch milliseconds; older records in seconds are detected
+/// and converted to milliseconds when displayed.
 #[derive(Debug, Clone)]
 pub struct Note {
     pub id: u64,
@@ -62,7 +62,7 @@ impl Note {
     }
 }
 
-/// Сохраняем многострочный текст в одной строке файла.
+/// Store multiline text on a single file line.
 fn encode_text(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     for c in s.chars() {
@@ -107,8 +107,8 @@ fn now_millis() -> u64 {
         .unwrap_or(0)
 }
 
-/// Читает все заметки, сортирует по id (старые сверху).
-/// Битые строки молча пропускаются — файл мог править человек.
+/// Read all notes, sorted by id (oldest first).
+/// Broken lines are skipped silently — a human may have edited the file.
 pub fn note_list() -> Vec<Note> {
     let raw = match fs::read_to_string(notes_path()) {
         Ok(v) => v,
@@ -158,7 +158,7 @@ fn write_all(notes: &[Note]) -> Result<(), String> {
     fs::rename(&tmp, notes_path()).map_err(|e| format!("cannot replace notes: {e}"))
 }
 
-/// Добавляет заметку, возвращает её id.
+/// Add a note and return its id.
 pub fn note_add(text: &str) -> Result<u64, String> {
     let clean = clean_text(text)?;
     let mut notes = note_list();
@@ -250,7 +250,7 @@ mod tests {
 
     #[test]
     fn multiline_text_roundtrip() {
-        let raw = "первая строка\nвторая\tстрока\\конец";
+        let raw = "first line\nsecond\tline\\end";
         assert_eq!(decode_text(&encode_text(raw)), raw);
     }
 

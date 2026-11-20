@@ -1,4 +1,4 @@
-//! Тонкий протокол для Go-CLI и GUI: одна команда -> одна JSON-строка.
+//! Thin protocol for the Go CLI and GUI: one command -> one JSON line.
 
 use neomind_core::{
     json_escape, note_add, note_clear, note_delete, note_list, note_update, notes_json,

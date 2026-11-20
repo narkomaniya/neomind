@@ -241,43 +241,43 @@
 <body>
 <div class="workbench">
   <div class="activity">
-    <button class="act on" id="actFiles" title="Проводник"><svg viewBox="0 0 24 24"><path d="M4 4h6l2 2h8v12H4z"/></svg></button>
-    <button class="act" id="actSearch" title="Поиск (Ctrl+F)"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l5 5"/></svg></button>
-    <button class="act" id="actLangs" title="Языки и тулчейны"><svg viewBox="0 0 24 24"><path d="M4 7l8-4 8 4-8 4-8-4z"/><path d="M4 7v10l8 4 8-4V7"/><path d="M12 11v8"/><path d="M9 16l3 3 3-3"/></svg></button>
-    <button class="act bottom" id="actFolder" title="Открыть папку данных"><svg viewBox="0 0 24 24"><path d="M4 6h6l2 2h8v10H4z"/></svg></button>
+    <button class="act on" id="actFiles" title="Explorer"><svg viewBox="0 0 24 24"><path d="M4 4h6l2 2h8v12H4z"/></svg></button>
+    <button class="act" id="actSearch" title="Search (Ctrl+F)"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l5 5"/></svg></button>
+    <button class="act" id="actLangs" title="Languages &amp; toolchains"><svg viewBox="0 0 24 24"><path d="M4 7l8-4 8 4-8 4-8-4z"/><path d="M4 7v10l8 4 8-4V7"/><path d="M12 11v8"/><path d="M9 16l3 3 3-3"/></svg></button>
+    <button class="act bottom" id="actFolder" title="Open data folder"><svg viewBox="0 0 24 24"><path d="M4 6h6l2 2h8v10H4z"/></svg></button>
   </div>
 
   <aside class="sidebar" id="sidebar">
     <div class="view-col" id="sideFiles">
       <div class="side-title">
-        <span>Проводник</span>
+        <span>Explorer</span>
         <div class="side-actions">
-          <button class="mini" id="sortBtn" title="Сортировка"><svg viewBox="0 0 24 24"><path d="M7 5v14M4 16l3 3 3-3M17 19V5M14 8l3-3 3 3"/></svg></button>
-          <button class="mini" id="newBtn" title="Новая заметка (Ctrl+N)"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+          <button class="mini" id="sortBtn" title="Sort"><svg viewBox="0 0 24 24"><path d="M7 5v14M4 16l3 3 3-3M17 19V5M14 8l3-3 3 3"/></svg></button>
+          <button class="mini" id="newBtn" title="New note (Ctrl+N)"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
         </div>
       </div>
       <label class="searchbox">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l5 5"/></svg>
-        <input id="search" placeholder="Фильтр" spellcheck="false"><kbd>Ctrl F</kbd>
+        <input id="search" placeholder="Filter" spellcheck="false"><kbd>Ctrl F</kbd>
       </label>
       <div class="list" id="list" tabindex="0"></div>
     </div>
 
     <div class="view-col hidden" id="sideLangs">
       <div class="side-title">
-        <span>Языки</span>
+        <span>Languages</span>
         <div class="side-actions">
-          <button class="mini" id="langRefreshSide" title="Обновить список"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2 6"/><path d="M20 5v6h-6"/></svg></button>
+          <button class="mini" id="langRefreshSide" title="Refresh list"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2 6"/><path d="M20 5v6h-6"/></svg></button>
         </div>
       </div>
       <label class="searchbox lang-filter">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l5 5"/></svg>
-        <input id="langSearch" placeholder="Фильтр языков" spellcheck="false">
+        <input id="langSearch" placeholder="Filter languages" spellcheck="false">
       </label>
       <div class="lang-list" id="langList"></div>
       <div class="lang-foot">
-        <button class="link" id="langSelAll">Выбрать все</button>
-        <button class="link" id="langSelNone">Снять выделение</button>
+        <button class="link" id="langSelAll">Select all</button>
+        <button class="link" id="langSelNone">Clear selection</button>
       </div>
     </div>
   </aside>
@@ -288,34 +288,34 @@
       <div class="tab hidden" id="tab">
         <span class="name" id="tabName"></span>
         <span class="dirty hidden" id="tabDirty"></span>
-        <button class="x" id="tabClose" title="Закрыть"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        <button class="x" id="tabClose" title="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
-      <div class="tab hidden" id="langTab"><span class="name">Языки и тулчейны</span></div>
+      <div class="tab hidden" id="langTab"><span class="name">Languages &amp; toolchains</span></div>
       <div class="spacer"></div>
-      <button class="new" id="newTop" title="Новая заметка (Ctrl+N)"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button class="new" id="newTop" title="New note (Ctrl+N)"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
     </div>
     <div class="crumb"><span>N E O M I N D</span><span>/</span><b id="crumb"></b></div>
 
     <div class="langview hidden" id="langView">
       <div class="lang-head">
         <div>
-          <h2>Языки и тулчейны</h2>
-          <p>Каталог наборов · массовая установка через winget (Windows)</p>
+          <h2>Languages &amp; toolchains</h2>
+          <p>Toolchain catalog · batch install via winget (Windows)</p>
         </div>
         <div class="lang-actions">
-          <button class="btn" id="langRefresh">Обновить</button>
-          <button class="btn" id="langInstallAll">Установить все</button>
-          <button class="btn primary" id="langInstallSel">Установить выбранные</button>
+          <button class="btn" id="langRefresh">Refresh</button>
+          <button class="btn" id="langInstallAll">Install all</button>
+          <button class="btn primary" id="langInstallSel">Install selected</button>
         </div>
       </div>
       <div class="lang-stats">
-        <span>Всего: <b id="lsTotal">0</b></span>
-        <span>Установлено: <b id="lsInstalled">0</b></span>
-        <span>Выбрано: <b id="lsSelected">0</b></span>
+        <span>Total: <b id="lsTotal">0</b></span>
+        <span>Installed: <b id="lsInstalled">0</b></span>
+        <span>Selected: <b id="lsSelected">0</b></span>
       </div>
       <div class="lang-grid" id="langGrid"></div>
       <div class="lang-progress hidden" id="langProgress">
-        <div class="lp-head"><span id="lpTitle">Установка</span><span id="lpCount">0 / 0</span></div>
+        <div class="lp-head"><span id="lpTitle">Installing</span><span id="lpCount">0 / 0</span></div>
         <div class="lp-bar"><div id="lpFill"></div></div>
         <div class="lp-current" id="lpCurrent"></div>
         <div class="lp-log" id="lpLog"></div>
@@ -327,19 +327,19 @@
       <textarea id="text" spellcheck="false" class="hidden" placeholder=""></textarea>
       <div class="welcome" id="welcome">
         <div class="keys">
-          <div><b>Ctrl N</b> новая заметка</div>
-          <div><b>Ctrl P</b> быстрый переход</div>
-          <div><b>Ctrl F</b> фильтр списка</div>
-          <div><b>Ctrl S</b> сохранить</div>
+          <div><b>Ctrl N</b> new note</div>
+          <div><b>Ctrl P</b> quick open</div>
+          <div><b>Ctrl F</b> filter list</div>
+          <div><b>Ctrl S</b> save</div>
         </div>
-        <button id="welcomeNew">Новая заметка</button>
+        <button id="welcomeNew">New note</button>
       </div>
     </div>
 
     <div class="status">
       <div class="l">
         <span class="item"><span class="dot" id="coreDot"></span><span id="coreVer">Rust core</span></span>
-        <span class="item" id="count">0 заметок</span>
+        <span class="item" id="count">0 notes</span>
         <span class="item msg" id="msg"></span>
       </div>
       <div class="r">
@@ -353,17 +353,17 @@
 
 <div class="veil hidden" id="palette">
   <div class="dialog">
-    <div class="head">Быстрый переход</div>
-    <input id="palInput" placeholder="Имя заметки..." spellcheck="false">
+    <div class="head">Quick open</div>
+    <input id="palInput" placeholder="Note title..." spellcheck="false">
     <div class="opts" id="palOpts"></div>
   </div>
 </div>
 
 <div class="veil hidden" id="confirm">
   <div class="dialog">
-    <div class="head" id="confTitle">Удаление</div>
+    <div class="head" id="confTitle">Delete</div>
     <div class="body" id="confBody"></div>
-    <div class="foot"><button id="confNo">Отмена</button><button class="ok" id="confYes">Удалить</button></div>
+    <div class="foot"><button id="confNo">Cancel</button><button class="ok" id="confYes">Delete</button></div>
   </div>
 </div>
 
@@ -379,7 +379,7 @@ const ICON_CHECK='<svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>';
 
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function fmt(ms){try{return new Date(ms).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});}catch(e){return '';}}
-function titleOf(t){const l=String(t||'').trim().split('\n')[0]||'Без названия';return l.length>58?l.slice(0,58)+'…':l;}
+function titleOf(t){const l=String(t||'').trim().split('\n')[0]||'Untitled';return l.length>58?l.slice(0,58)+'…':l;}
 function keyOf(n){return n.id||n.ts;}
 function timeOf(n){return n.created||(keyOf(n)>1e12?keyOf(n):keyOf(n)*1000);}
 function mark(s,q){
@@ -391,7 +391,7 @@ function message(t){
   $('msg').textContent=t; clearTimeout(msgTimer);
   msgTimer=setTimeout(()=>{$('msg').textContent='';},3200);
 }
-function fail(e){message('Ошибка: '+(e&&e.message?e.message:e));}
+function fail(e){message('Error: '+(e&&e.message?e.message:e));}
 function lineNumbers(){
   const n=textEl.value.split('\n').length;
   let s='';for(let i=1;i<=n;i++)s+=i+'\n';
@@ -403,14 +403,14 @@ function updatePos(){
   const lines=before.split('\n');
   $('pos').textContent='Ln '+lines.length+', Col '+(lines[lines.length-1].length+1);
 }
-function updateCount(){$('count').textContent=notes.length+(notes.length===1?' заметка':' заметок');}
+function updateCount(){$('count').textContent=notes.length+(notes.length===1?' note':' notes');}
 
 /* ---------- languages view ---------- */
 function langVisible(){
   const q=($('langSearch').value||'').trim().toLowerCase();
   return langs.filter(l=>!q||(l.name+' '+l.desc+' '+l.winget).toLowerCase().includes(q));
 }
-function langStatus(l){return l.installed?'установлен':'не установлен';}
+function langStatus(l){return l.installed?'installed':'not installed';}
 function langRowHTML(l){
   const on=langSelected.has(l.id)?' checked':'';
   return '<label class="langrow'+(on?' checked':'')+'" data-lang="'+esc(l.id)+'">'+
@@ -425,7 +425,7 @@ function langCardHTML(l){
     '<label class="lang-card-top"><input type="checkbox" data-lang-check="'+esc(l.id)+'"'+on+'>'+
     '<span class="lname">'+esc(l.name)+'</span><span class="lflag">'+langStatus(l)+'</span></label>'+
     '<div class="ldesc">'+esc(l.desc)+'</div>'+
-    '<div class="lmeta"><span>версия '+esc(l.version)+'</span><span>'+esc(l.size)+'</span><code>'+esc(l.winget)+'</code></div>'+
+    '<div class="lmeta"><span>version '+esc(l.version)+'</span><span>'+esc(l.size)+'</span><code>'+esc(l.winget)+'</code></div>'+
     '</div>';
 }
 function bindLangCheck(cb){
@@ -437,7 +437,7 @@ function bindLangCheck(cb){
 }
 function renderLangs(){
   const shown=langVisible();
-  const empty='<div class="lang-empty">Совпадений нет</div>';
+  const empty='<div class="lang-empty">No matches</div>';
   $('langList').innerHTML=shown.length?shown.map(langRowHTML).join(''):empty;
   $('langGrid').innerHTML=shown.length?shown.map(langCardHTML).join(''):empty;
   $('langList').querySelectorAll('input[data-lang-check]').forEach(bindLangCheck);
@@ -462,10 +462,10 @@ function setAllLangs(on){
 function renderProgress(j){
   const pct=j.total?Math.round((j.done.length+j.failed.length)/j.total*100):0;
   $('langProgress').classList.remove('hidden');
-  $('lpTitle').textContent=j.running?'Установка…':'Завершено';
+  $('lpTitle').textContent=j.running?'Installing...':'Done';
   $('lpCount').textContent=(j.done.length+j.failed.length)+' / '+j.total;
   $('lpFill').style.width=pct+'%';
-  $('lpCurrent').textContent=j.running&&j.current?('Устанавливается: '+j.current):'';
+  $('lpCurrent').textContent=j.running&&j.current?('Installing: '+j.current):'';
   $('lpLog').innerHTML=j.messages.map(m=>esc(m)).join('<br>');
   $('lpLog').scrollTop=$('lpLog').scrollHeight;
 }
@@ -479,18 +479,18 @@ async function pollProgress(){
       langTimer=setTimeout(pollProgress,900);
     }else{
       langJob=null; langTimer=null;
-      message(j.failed.length?'Установка завершена с ошибками':'Установка завершена');
+      message(j.failed.length?'Install finished with errors':'Install finished');
       await loadLanguages();
     }
   }catch(e){fail(e);}finally{langBusy=false;}
 }
 async function installLangs(ids){
-  if(langJob){message('Установка уже идёт');return;}
-  if(!ids.length){message('Выберите языки');return;}
+  if(langJob){message('Install is already running');return;}
+  if(!ids.length){message('Select languages first');return;}
   try{
     langJob=await nm_install_languages(JSON.stringify(ids));
-    renderProgress({running:true,current:'',total:ids.length,done:[],failed:[],messages:['Задача создана']});
-    message('Установка запущена');
+    renderProgress({running:true,current:'',total:ids.length,done:[],failed:[],messages:['Task created']});
+    message('Install started');
     renderLangs();
     langTimer=setTimeout(pollProgress,400);
   }catch(e){fail(e);}
@@ -508,8 +508,8 @@ function switchView(v){
   $('langTab').classList.toggle('hidden',files);
   $('actFiles').classList.toggle('on',files);
   $('actLangs').classList.toggle('on',!files);
-  $('crumb').textContent=files?(selected!==null?titleOf(notes.find(n=>keyOf(n)===selected)?.text||''):''):'Языки';
-  document.title=files?'NeoMind':'NeoMind — Языки';
+  $('crumb').textContent=files?(selected!==null?titleOf(notes.find(n=>keyOf(n)===selected)?.text||''):''):'Languages';
+  document.title=files?'NeoMind':'NeoMind — Languages';
   if(window.nm_report) nm_report('view '+v);
   if(!files)loadLanguages();
 }
@@ -527,7 +527,7 @@ async function loadStatus(){
     const r=JSON.parse(await nm_status());
     $('coreVer').textContent='Rust core '+r.version;
     $('coreDot').style.background='#d4d4d4';
-  }catch(e){$('coreVer').textContent='core недоступен';}
+  }catch(e){$('coreVer').textContent='core unavailable';}
 }
 function sorted(){
   const a=notes.slice();
@@ -540,7 +540,7 @@ function render(){
   const q=searchEl.value.trim().toLowerCase();
   const shown=sorted().filter(n=>!q||n.text.toLowerCase().includes(q));
   if(!shown.length){
-    listEl.innerHTML='<div class="side-empty">'+(q?'Совпадений нет':'Папка пуста')+'</div>';
+    listEl.innerHTML='<div class="side-empty">'+(q?'No matches':'Folder is empty')+'</div>';
     return;
   }
   listEl.innerHTML=shown.map(n=>{
@@ -578,7 +578,7 @@ function closeEditor(){
   flushSave(false); selected=null; showEditor(false); render();
 }
 function setDirty(){
-  $('saved').textContent='изменения'; $('tabDirty').classList.remove('hidden');
+  $('saved').textContent='unsaved'; $('tabDirty').classList.remove('hidden');
   lineNumbers(); updatePos();
   clearTimeout(saveTimer); saveTimer=setTimeout(()=>save(true),900);
 }
@@ -593,24 +593,24 @@ async function save(silent,reselect){
     await nm_update(String(keep),text);
     await load();
     if(reselect===false){
-      $('saved').textContent='сохранено';
+      $('saved').textContent='saved';
       $('tabDirty').classList.add('hidden');
       return;
     }
     selected=null;
     select(keep,true);
     $('tabDirty').classList.add('hidden');
-    $('saved').textContent='сохранено';
-    if(!silent)message('Сохранено');
+    $('saved').textContent='saved';
+    if(!silent)message('Saved');
   }catch(e){fail(e);}
 }
 async function create(){
   try{
-    const id=Number(await nm_add('Новая заметка'));
+    const id=Number(await nm_add('New note'));
     await load(); closePalette();
     selected=null; select(id);
     textEl.focus(); textEl.select();
-    message('Заметка создана');
+    message('Note created');
   }catch(e){fail(e);}
 }
 function ask(title,body,yes,action){
@@ -623,10 +623,10 @@ function closeConfirm(){$('confirm').classList.add('hidden');confirmAction=null;
 async function remove(){
   if(selected===null)return;
   const n=notes.find(x=>keyOf(x)===selected);
-  ask('Удалить заметку','«'+titleOf(n?n.text:'')+'» будет удалена без возможности восстановления.','Удалить',async()=>{
+  ask('Delete note','“'+titleOf(n?n.text:'')+'” will be deleted permanently.','Delete',async()=>{
     try{
       await nm_delete(String(selected));
-      selected=null; closeEditor(); await load(); message('Заметка удалена');
+      selected=null; closeEditor(); await load(); message('Note deleted');
     }catch(e){fail(e);}
   });
 }
@@ -643,7 +643,7 @@ function renderPalette(){
   if(palIndex>=items.length)palIndex=0;
   $('palOpts').innerHTML=items.length?items.map((n,i)=>
     '<div class="opt'+(i===palIndex?' on':'')+'" data-id="'+keyOf(n)+'"><span>'+esc(titleOf(n.text))+'</span><span>'+esc(fmt(timeOf(n)))+'</span></div>').join('')
-    :'<div class="opt"><span>Совпадений нет</span></div>';
+    :'<div class="opt"><span>No matches</span></div>';
   $('palOpts').querySelectorAll('.opt[data-id]').forEach(el=>{
     el.onclick=()=>{select(Number(el.dataset.id));closePalette();};
   });
@@ -661,7 +661,7 @@ $('langInstallSel').onclick=()=>installLangs([...langSelected]);
 $('langInstallAll').onclick=()=>installLangs(langs.map(l=>l.id));
 $('sortBtn').onclick=()=>{
   sortMode=sortMode==='date-desc'?'date-asc':sortMode==='date-asc'?'title':'date-desc';
-  message('Сортировка: '+(sortMode==='date-desc'?'сначала новые':sortMode==='date-asc'?'сначала старые':'по названию'));
+  message('Sort: '+(sortMode==='date-desc'?'newest first':sortMode==='date-asc'?'oldest first':'by title'));
   render();
 };
 searchEl.oninput=render;

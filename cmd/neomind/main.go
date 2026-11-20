@@ -1,4 +1,4 @@
-// neomind — удобный Go-CLI поверх Rust-ядра.
+// neomind — a friendly Go CLI on top of the Rust core.
 package main
 
 import (
@@ -33,19 +33,19 @@ func dim(s string) string    { return paint("90", s) }
 func bold(s string) string   { return paint("1", s) }
 
 func usage() {
-	fmt.Println(bold("NeoMind") + " — быстрые заметки с ядром на Rust и CLI на Go")
+	fmt.Println(bold("NeoMind") + " — quick notes with a Rust core and Go CLI")
 	fmt.Println()
-	fmt.Println(bold("Использование:"))
+	fmt.Println(bold("Usage:"))
 	fmt.Println("  neomind                     show this help")
-	fmt.Println("  neomind status [--json]     состояние ядра и хранилища")
-	fmt.Println("  neomind note add <текст>    добавить заметку")
-	fmt.Println("  neomind note list [--json]  показать заметки")
-	fmt.Println("  neomind note clear [--yes]  очистить хранилище")
-	fmt.Println("  neomind doctor              проверить установку")
-	fmt.Println("  neomind gui                 открыть desktop-приложение")
-	fmt.Println("  neomind version             версия CLI и ядра")
+	fmt.Println("  neomind status [--json]     core and storage status")
+	fmt.Println("  neomind note add <text>     add a note")
+	fmt.Println("  neomind note list [--json]  list notes")
+	fmt.Println("  neomind note clear [--yes]  clear all notes")
+	fmt.Println("  neomind doctor              check the installation")
+	fmt.Println("  neomind gui                 open the desktop app")
+	fmt.Println("  neomind version             CLI and core versions")
 	fmt.Println()
-	fmt.Println(dim("Переменные: NEOMIND_CORE — путь к neomind-core, NO_COLOR — без цвета."))
+	fmt.Println(dim("Environment: NEOMIND_CORE — path to neomind-core, NO_COLOR — disable colours."))
 }
 
 func die(err error) {
@@ -100,14 +100,18 @@ func cmdNote(args []string) int {
 		text := strings.Join(plain(args[1:]), " ")
 		text = strings.TrimSpace(text)
 		if text == "" {
-			fmt.Fprintln(os.Stderr, "usage: neomind note add <текст>")
+			fmt.Fprintln(os.Stderr, "usage: neomind note add <text>")
 			return 2
 		}
 		r, err := core.Call("note_add", text)
 		if err != nil {
 			die(err)
 		}
-		fmt.Println(green("saved") + dim(fmt.Sprintf(" · %d notes total", r.Count)))
+		suffix := "s"
+		if r.Count == 1 {
+			suffix = ""
+		}
+		fmt.Println(green("saved") + dim(fmt.Sprintf(" · %d note%s total", r.Count, suffix)))
 		return 0
 
 	case "list":
@@ -121,11 +125,11 @@ func cmdNote(args []string) int {
 			return 0
 		}
 		if len(r.Notes) == 0 {
-			fmt.Println(dim("no notes yet — try: neomind note add «первая мысль»"))
+			fmt.Println(dim("no notes yet — try: neomind note add \"first thought\""))
 			return 0
 		}
 		for i, n := range r.Notes {
-			stamp := time.Unix(n.TS, 0).Format("2006-01-02 15:04")
+			stamp := time.Unix(n.CreatedMillis()/1000, 0).Format("2006-01-02 15:04")
 			fmt.Printf("%s  %s\n", dim(fmt.Sprintf("%3d. %s", i+1, stamp)), n.Text)
 		}
 		return 0

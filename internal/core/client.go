@@ -1,4 +1,4 @@
-// Package core запускает Rust-ядро и разбирает его JSON-ответы.
+// Package core starts the Rust core and parses its JSON answers.
 package core
 
 import (
@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-// Note — одна запись из хранилища ядра.
+// Note is one entry from the core storage.
 type Note struct {
 	ID      int64  `json:"id"`
 	TS      int64  `json:"ts"`
@@ -22,8 +22,8 @@ type Note struct {
 	Text    string `json:"text"`
 }
 
-// CreatedMillis возвращает время создания в миллисекундах.
-// Старые записи ядра могли хранить секунды в поле ts.
+// CreatedMillis returns the creation time in milliseconds.
+// Older core records could store seconds in the ts field.
 func (n Note) CreatedMillis() int64 {
 	if n.Created > 0 {
 		return n.Created
@@ -40,7 +40,7 @@ func (n Note) CreatedMillis() int64 {
 	return n.TS
 }
 
-// Key — стабильный идентификатор заметки.
+// Key is the stable note identifier.
 func (n Note) Key() int64 {
 	if n.ID != 0 {
 		return n.ID
@@ -48,7 +48,7 @@ func (n Note) Key() int64 {
 	return n.TS
 }
 
-// Response — общий вид ответа neomind-core.
+// Response is the common shape of a neomind-core answer.
 type Response struct {
 	OK        bool   `json:"ok"`
 	Error     string `json:"error,omitempty"`
@@ -69,7 +69,7 @@ func coreName() string {
 	return "neomind-core"
 }
 
-// Path ищет ядро: сначала NEOMIND_CORE, потом рядом с CLI, потом в PATH.
+// Path finds the core: NEOMIND_CORE first, then next to the CLI, then PATH.
 func Path() (string, error) {
 	if p := strings.TrimSpace(os.Getenv("NEOMIND_CORE")); p != "" {
 		if _, err := os.Stat(p); err == nil {
@@ -89,7 +89,7 @@ func Path() (string, error) {
 	return "", errors.New("neomind-core not found (run scripts/build.* or set NEOMIND_CORE)")
 }
 
-// Call выполняет одну команду ядра и возвращает разобранный ответ.
+// Call runs one core command and returns the parsed answer.
 func Call(args ...string) (Response, error) {
 	var out Response
 	core, err := Path()
@@ -120,7 +120,7 @@ func Call(args ...string) (Response, error) {
 	return out, nil
 }
 
-// DataDir возвращает папку хранилища (совпадает с логикой Rust-ядра).
+// DataDir returns the storage folder (matching the Rust core logic).
 func DataDir() string {
 	if p := strings.TrimSpace(os.Getenv("NEOMIND_DATA_DIR")); p != "" {
 		return p

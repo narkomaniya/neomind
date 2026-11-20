@@ -1,5 +1,5 @@
-// neomind-gui — нативное desktop-окно NeoMind (WebView2 / WebKit / GTK).
-// Вся логика остаётся в Rust-ядре; GUI лишь вызывает её через bindings.
+// neomind-gui — the native NeoMind desktop window (WebView2 / WebKit / GTK).
+// All logic stays in the Rust core; the GUI only calls it through bindings.
 package main
 
 import (
@@ -150,7 +150,7 @@ func main() {
 
 	w := webview.New(false)
 	defer w.Destroy()
-	w.SetTitle("NeoMind — заметки")
+	w.SetTitle("NeoMind — Notes")
 	w.SetSize(1180, 760, webview.HintMin)
 	bindAll(w)
 	if debug {

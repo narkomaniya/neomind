@@ -1,5 +1,5 @@
-// Package languages — каталог языков/тулчейнов, которые можно поставить
-// одной пачкой через winget, и менеджер фоновых установок.
+// Package languages holds the catalogue of languages/toolchains that can be
+// installed in one batch via winget, plus a background install manager.
 package languages
 
 import (
@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-// Language — одна запись каталога.
+// Language is one catalogue entry.
 type Language struct {
 	ID        string `json:"id"`
 	Name      string `json:"name"`
@@ -26,22 +26,22 @@ type Language struct {
 	Installed bool   `json:"installed"`
 }
 
-// Catalog — список языков с проверенными winget-идентификаторами.
+// Catalog lists languages with verified winget identifiers.
 var Catalog = []Language{
-	{ID: "go", Name: "Go", Version: "1.27", Size: "~75 MB", Desc: "CLI, сервисы, тулы", Winget: "GoLang.Go", Check: "go"},
-	{ID: "rust", Name: "Rust", Version: "stable", Size: "~150 MB", Desc: "ядра, системный код", Winget: "Rustlang.Rustup", Check: "cargo"},
-	{ID: "python", Name: "Python", Version: "3.13", Size: "~30 MB", Desc: "скриптинг, данные, ИИ", Winget: "Python.Python.3.13", Check: "py"},
-	{ID: "node", Name: "Node.js", Version: "LTS", Size: "~30 MB", Desc: "JS, фронтенд, инструменты", Winget: "OpenJS.NodeJS", Check: "node"},
+	{ID: "go", Name: "Go", Version: "1.27", Size: "~75 MB", Desc: "CLI, services, tooling", Winget: "GoLang.Go", Check: "go"},
+	{ID: "rust", Name: "Rust", Version: "stable", Size: "~150 MB", Desc: "cores, systems code", Winget: "Rustlang.Rustup", Check: "cargo"},
+	{ID: "python", Name: "Python", Version: "3.13", Size: "~30 MB", Desc: "scripting, data, AI", Winget: "Python.Python.3.13", Check: "py"},
+	{ID: "node", Name: "Node.js", Version: "LTS", Size: "~30 MB", Desc: "JS, frontend, tooling", Winget: "OpenJS.NodeJS", Check: "node"},
 	{ID: "java", Name: "Java (JDK)", Version: "21", Size: "~200 MB", Desc: "JVM, Android, enterprise", Winget: "Microsoft.OpenJDK.21", Check: "java"},
-	{ID: "cpp", Name: "C / C++ (MinGW)", Version: "WinLibs", Size: "~120 MB", Desc: "компилятор и стандартная библиотека", Winget: "BrechtSanders.WinLibs.POSIX.UCRT", Check: "gcc"},
-	{ID: "csharp", Name: ".NET SDK", Version: "9", Size: "~200 MB", Desc: "C#, F#, веб и desktop", Winget: "Microsoft.DotNet.SDK.9", Check: "dotnet"},
-	{ID: "ruby", Name: "Ruby", Version: "3.x", Size: "~40 MB", Desc: "Ruby, Rails, скрипты", Winget: "RubyInstallerTeam.RubyWithDevKit", Check: "ruby"},
-	{ID: "php", Name: "PHP", Version: "8.3", Size: "~25 MB", Desc: "веб, CMS, бэкенд", Winget: "PHP.PHP.8.3", Check: "php"},
-	{ID: "perl", Name: "Perl", Version: "5.x", Size: "~50 MB", Desc: "текст, автоматизация", Winget: "StrawberryPerl.StrawberryPerl", Check: "perl"},
+	{ID: "cpp", Name: "C / C++ (MinGW)", Version: "WinLibs", Size: "~120 MB", Desc: "compiler and standard library", Winget: "BrechtSanders.WinLibs.POSIX.UCRT", Check: "gcc"},
+	{ID: "csharp", Name: ".NET SDK", Version: "9", Size: "~200 MB", Desc: "C#, F#, web and desktop", Winget: "Microsoft.DotNet.SDK.9", Check: "dotnet"},
+	{ID: "ruby", Name: "Ruby", Version: "3.x", Size: "~40 MB", Desc: "Ruby, Rails, scripting", Winget: "RubyInstallerTeam.RubyWithDevKit", Check: "ruby"},
+	{ID: "php", Name: "PHP", Version: "8.3", Size: "~25 MB", Desc: "web, CMS, backend", Winget: "PHP.PHP.8.3", Check: "php"},
+	{ID: "perl", Name: "Perl", Version: "5.x", Size: "~50 MB", Desc: "text processing, automation", Winget: "StrawberryPerl.StrawberryPerl", Check: "perl"},
 }
 
-// present проверяет и PATH, и типовые места установки на Windows: GUI часто
-// запускается ярлыком до того, как свежий PATH попадёт в процесс.
+// present checks both PATH and the usual Windows install locations: the GUI is
+// often launched from a shortcut before a fresh PATH reaches the process.
 func present(cmd string) bool {
 	if _, err := exec.LookPath(cmd); err == nil {
 		return true
@@ -98,7 +98,7 @@ func present(cmd string) bool {
 	return false
 }
 
-// Snapshot возвращает каталог с актуальными флагами установки.
+// Snapshot returns the catalogue with up-to-date install flags.
 func Snapshot() []Language {
 	out := make([]Language, len(Catalog))
 	copy(out, Catalog)
@@ -111,13 +111,13 @@ func Snapshot() []Language {
 	return out
 }
 
-// JSON возвращает каталог в виде JSON-строки для GUI.
+// JSON returns the catalogue as a JSON string for the GUI.
 func JSON() string {
 	b, _ := json.Marshal(Snapshot())
 	return string(b)
 }
 
-// Job — состояние фоновой установки.
+// Job is the state of a background installation.
 type Job struct {
 	ID       string   `json:"id"`
 	Running  bool     `json:"running"`
@@ -128,7 +128,7 @@ type Job struct {
 	Messages []string `json:"messages"`
 }
 
-// Manager хранит активные задачи установки.
+// Manager keeps the active install jobs.
 type Manager struct {
 	mu   sync.Mutex
 	jobs map[string]*Job
@@ -160,7 +160,7 @@ func (m *Manager) Start(ids []string) string {
 						break
 					}
 				}
-				m.addMessage(job, false, name, "winget доступен только на Windows")
+				m.addMessage(job, false, name, "winget is only available on Windows")
 			}
 			return
 		}
@@ -194,7 +194,7 @@ func (m *Manager) Start(ids []string) string {
 				}
 				m.addMessage(job, false, lang.Name, msg)
 			} else {
-				m.addMessage(job, true, lang.Name, "установлен")
+				m.addMessage(job, true, lang.Name, "installed")
 			}
 		}
 	}()
@@ -215,7 +215,7 @@ func (m *Manager) addMessage(job *Job, ok bool, name, text string) {
 	}
 }
 
-// Progress возвращает снимок задачи.
+// Progress returns a snapshot of a job.
 func (m *Manager) Progress(id string) (Job, bool) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
