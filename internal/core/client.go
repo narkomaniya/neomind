@@ -20,6 +20,8 @@ type Note struct {
 	TS      int64  `json:"ts"`
 	Created int64  `json:"created"`
 	Text    string `json:"text"`
+	Name    string `json:"name"`
+	Folder  string `json:"folder"`
 }
 
 // CreatedMillis returns the creation time in milliseconds.
@@ -148,6 +150,18 @@ func Add(text string) (int64, error) {
 
 func Update(id int64, text string) error {
 	_, err := Call("note_update", strconv.FormatInt(id, 10), text)
+	return err
+}
+
+// AddFile creates a named file inside an internal folder or an absolute path.
+func AddFile(name, folder, text string) (int64, error) {
+	r, err := Call("note_add_file", name, folder, text)
+	return r.ID, err
+}
+
+// UpdateFile changes a file's content, name and folder.
+func UpdateFile(id int64, name, folder, text string) error {
+	_, err := Call("note_update_file", strconv.FormatInt(id, 10), name, folder, text)
 	return err
 }
 

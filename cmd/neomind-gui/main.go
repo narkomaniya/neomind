@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strconv"
 
@@ -35,6 +36,22 @@ func parseID(s string) (int64, error) {
 	return strconv.ParseInt(s, 10, 64)
 }
 
+// writeDiskFile mirrors a file into a real folder chosen with the native dialog.
+// Internal folders are plain names, so they are intentionally skipped here.
+func writeDiskFile(folder, name, text string) error {
+	if folder == "" || !filepath.IsAbs(folder) {
+		return nil
+	}
+	clean := filepath.Base(name)
+	if clean != name || clean == "." || clean == ".." {
+		return fmt.Errorf("invalid file name")
+	}
+	if err := os.MkdirAll(folder, 0o755); err != nil {
+		return err
+	}
+	return os.WriteFile(filepath.Join(folder, clean), []byte(text), 0o644)
+}
+
 func bindAll(w webview.WebView) {
 	bind(w, "nm_list", func() (string, error) {
 		notes, err := core.List()
@@ -48,6 +65,29 @@ func bindAll(w webview.WebView) {
 	bind(w, "nm_add", func(text string) (string, error) {
 		id, err := core.Add(text)
 		return strconv.FormatInt(id, 10), err
+	})
+
+	bind(w, "nm_add_file", func(name, folder, text string) (string, error) {
+		if err := writeDiskFile(folder, name, text); err != nil {
+			return "", err
+		}
+		id, err := core.AddFile(name, folder, text)
+		return strconv.FormatInt(id, 10), err
+	})
+
+	bind(w, "nm_update_file", func(id, name, folder, text string) (string, error) {
+		if err := writeDiskFile(folder, name, text); err != nil {
+			return "", err
+		}
+		n, err := parseID(id)
+		if err != nil {
+			return "", err
+		}
+		return "ok", core.UpdateFile(n, name, folder, text)
+	})
+
+	bind(w, "nm_pick_folder", func(title string) (string, error) {
+		return pickFolder(title)
 	})
 
 	bind(w, "nm_update", func(id, text string) (string, error) {
@@ -135,6 +175,11 @@ func bindAll(w webview.WebView) {
 		if err := mods.Open(rawURL); err != nil {
 			return "", err
 		}
+		return "ok", nil
+	})
+
+	bind(w, "nm_set_title", func(title string) (string, error) {
+		w.SetTitle(title)
 		return "ok", nil
 	})
 }

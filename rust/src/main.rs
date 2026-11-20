@@ -1,8 +1,8 @@
 //! Thin protocol for the Go CLI and GUI: one command -> one JSON line.
 
 use neomind_core::{
-    json_escape, note_add, note_clear, note_delete, note_list, note_update, notes_json,
-    status_json, VERSION,
+    json_escape, note_add, note_add_file, note_clear, note_delete, note_list, note_update,
+    note_update_file, notes_json, status_json, VERSION,
 };
 
 fn ok(op: &str, extra: &str) -> String {
@@ -40,12 +40,35 @@ fn main() {
             Err(e) => fail("note_add", &e),
         },
         "note_list" => notes_json(),
+        "note_add_file" => match note_add_file(
+            args.get(1).map(String::as_str).unwrap_or(""),
+            args.get(2).map(String::as_str).unwrap_or(""),
+            &args[3..].join(" "),
+        ) {
+            Ok(id) => ok(
+                "note_add_file",
+                &format!("\"id\":{},\"count\":{}", id, note_list().len()),
+            ),
+            Err(e) => fail("note_add_file", &e),
+        },
         "note_update" => match parse_id(args.get(1)) {
             Ok(id) => match note_update(id, &args[2..].join(" ")) {
                 Ok(()) => ok("note_update", &format!("\"id\":{}", id)),
                 Err(e) => fail("note_update", &e),
             },
             Err(e) => fail("note_update", &e),
+        },
+        "note_update_file" => match parse_id(args.get(1)) {
+            Ok(id) => match note_update_file(
+                id,
+                args.get(2).map(String::as_str).unwrap_or(""),
+                args.get(3).map(String::as_str).unwrap_or(""),
+                &args[4..].join(" "),
+            ) {
+                Ok(()) => ok("note_update_file", &format!("\"id\":{}", id)),
+                Err(e) => fail("note_update_file", &e),
+            },
+            Err(e) => fail("note_update_file", &e),
         },
         "note_delete" => match parse_id(args.get(1)).and_then(|id| note_delete(id).map(|_| id)) {
             Ok(id) => ok("note_delete", &format!("\"id\":{}", id)),

@@ -159,6 +159,9 @@
   .lang-card .ldesc{font-size:11px;color:var(--muted);margin:8px 0;line-height:1.4}
   .lang-card .lmeta{display:flex;gap:10px;flex-wrap:wrap;font-size:10px;color:var(--dim)}
   .lang-card .lmeta code{font:10px Consolas,monospace;color:var(--muted)}
+  .lang-group{grid-column:1/-1;margin:10px 0 2px;padding:5px 8px;border-bottom:1px solid var(--border-soft);
+    font-size:10px;letter-spacing:.7px;text-transform:uppercase;color:var(--dim)}
+  .lang-list .lang-group{margin:8px 0 2px;padding:4px 10px}
 
   .lang-progress{border:1px solid var(--border);background:var(--panel);padding:9px 12px;margin-top:12px;flex:none}
   .lp-head{display:flex;justify-content:space-between;font-size:11px;color:var(--bright);margin-bottom:7px}
@@ -288,7 +291,7 @@
   textarea{
     position:relative;z-index:1;flex:1;width:100%;resize:none;
     background:transparent;border:0;outline:0;
-    padding:18px 26px 18px 68px;
+    padding:18px 62px 18px 68px;
     font:13px/1.7 "Cascadia Mono",Consolas,"Lucida Console",monospace;
     color:transparent;caret-color:var(--bright);tab-size:2;white-space:pre;
   }
@@ -296,7 +299,7 @@
   textarea::selection{background:#264f78;color:transparent}
   .highlight{
     position:absolute;inset:0;z-index:0;margin:0;pointer-events:none;
-    padding:18px 26px 18px 68px;
+    padding:18px 62px 18px 68px;
     font:13px/1.7 "Cascadia Mono",Consolas,"Lucida Console",monospace;
     color:var(--text);tab-size:2;white-space:pre;overflow:hidden;
   }
@@ -309,6 +312,32 @@
   .tok-builtin,.tok-func{color:#dcdcaa}
   .tok-prop{color:#9cdcfe}
   .tok-op{color:#d4d4d4}
+  /* compact VS Code-style minimap */
+  .minimap{position:absolute;right:0;top:0;bottom:0;width:42px;z-index:2;
+    background:var(--editor);border-left:1px solid var(--border-soft);cursor:pointer}
+  .minimap canvas{display:block;width:42px;height:100%}
+  body.mod-no-minimap .minimap{display:none}
+  /* folder tree */
+  .tree{flex:none;max-height:38%;overflow:auto;border-bottom:1px solid var(--border-soft);padding:4px 0}
+  .tree-row{display:flex;align-items:center;gap:5px;height:20px;padding:0 8px 0 8px;
+    font-size:11px;color:var(--muted);white-space:nowrap;cursor:default;user-select:none}
+  .tree-row:hover{background:var(--hover);color:var(--bright)}
+  .tree-row.file{cursor:pointer;padding-left:22px}
+  .tree-row.file.on{background:var(--active);color:var(--bright)}
+  .tree-caret{width:10px;color:var(--dim);font-size:9px;text-align:center;flex:none}
+  .tree-icon{width:11px;color:var(--dim);flex:none}
+  .tree-row .tree-more{color:var(--dim);font-size:11px;margin-left:auto;padding:0 2px}
+  .tree-row .tree-more:hover{color:var(--bright)}
+  .tree-new{width:100%;border-top:1px solid var(--border-soft);padding:4px 8px;
+    text-align:left;font-size:11px;color:var(--dim)}
+  .tree-new:hover{color:var(--bright);background:var(--hover)}
+  .dialog .field{display:flex;align-items:center;border-bottom:1px solid var(--border)}
+  .dialog .field input{flex:1;border:0}
+  .dialog .field button{border:0;border-left:1px solid var(--border);background:transparent;
+    color:var(--muted);padding:0 12px;height:38px;font-size:11px;white-space:nowrap}
+  .dialog .field button:hover{color:var(--bright);background:var(--hover)}
+  .dialog label{display:block;padding:8px 14px 4px;font-size:10px;letter-spacing:.6px;
+    text-transform:uppercase;color:var(--dim)}
   .status select{
     background:transparent;border:0;outline:0;color:var(--muted);
     font:11px "Segoe UI",system-ui,sans-serif;cursor:pointer;max-width:110px;
@@ -358,6 +387,7 @@
 <div class="workbench">
   <div class="activity">
     <button class="act on" id="actFiles" title="Explorer"><svg viewBox="0 0 24 24"><path d="M4 4h6l2 2h8v12H4z"/></svg></button>
+    <button class="act" id="actFolders" title="Folders"><svg viewBox="0 0 24 24"><path d="M3 6h7l2 2h9v11H3z"/><path d="M3 10h18"/></svg></button>
     <button class="act" id="actSearch" title="Search (Ctrl+F)"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l5 5"/></svg></button>
     <button class="act" id="actLangs" title="Languages &amp; toolchains"><svg viewBox="0 0 24 24"><path d="M4 7l8-4 8 4-8 4-8-4z"/><path d="M4 7v10l8 4 8-4V7"/><path d="M12 11v8"/><path d="M9 16l3 3 3-3"/></svg></button>
     <button class="act" id="actMods" title="Mods &amp; themes"><svg viewBox="0 0 24 24"><path d="M10 4h5v3a2 2 0 1 0 4 0V4h1v6h-3a2 2 0 1 0 0 4h3v6h-6v-3a2 2 0 1 0-4 0v3H4v-6h3a2 2 0 1 0 0-4H4V4z"/></svg></button>
@@ -370,7 +400,7 @@
         <span>Explorer</span>
         <div class="side-actions">
           <button class="mini" id="sortBtn" title="Sort"><svg viewBox="0 0 24 24"><path d="M7 5v14M4 16l3 3 3-3M17 19V5M14 8l3-3 3 3"/></svg></button>
-          <button class="mini" id="newBtn" title="New note (Ctrl+N)"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+          <button class="mini" id="newBtn" title="New file (Ctrl+N)"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
         </div>
       </div>
       <label class="searchbox">
@@ -378,6 +408,19 @@
         <input id="search" placeholder="Filter" spellcheck="false"><kbd>Ctrl F</kbd>
       </label>
       <div class="list" id="list" tabindex="0"></div>
+    </div>
+
+    <div class="view-col hidden" id="sideFolders">
+      <div class="side-title">
+        <span>Folders</span>
+        <div class="side-actions">
+          <button class="mini" id="folderNew" title="New project"><svg viewBox="0 0 24 24"><path d="M3 6h7l2 2h9v11H3z"/><path d="M12 11v5M9.5 13.5h5"/></svg></button>
+          <button class="mini" id="folderFileNew" title="New file"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+        </div>
+      </div>
+      <div class="searchbox"><span></span><input id="folderFilter" placeholder="Filter folders" spellcheck="false"></div>
+      <div class="tree" id="folderTree"></div>
+      <button class="tree-new" id="folderAddRoot">+ New project</button>
     </div>
 
     <div class="view-col hidden" id="sideLangs">
@@ -411,9 +454,9 @@
       </label>
       <div class="ex-searchrow">
         <select class="ex-sort" id="modsSort" title="Sort by">
-          <option value="installs">Most installed</option>
-          <option value="rating">Highest rated</option>
-          <option value="name">Name</option>
+          <option value="installs" id="modsSortInstalls">Most installed</option>
+          <option value="rating" id="modsSortRating">Highest rated</option>
+          <option value="name" id="modsSortName">Name</option>
         </select>
         <button class="ex-pillbtn" id="modsScope" title="Show cosmetic-only picks">Cosmetic</button>
       </div>
@@ -430,18 +473,18 @@
         <span class="dirty hidden" id="tabDirty"></span>
         <button class="x" id="tabClose" title="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
-      <div class="tab hidden" id="langTab"><span class="name">Languages &amp; toolchains</span></div>
-      <div class="tab hidden" id="modsTab"><span class="name">Mods &amp; themes</span></div>
+      <div class="tab hidden" id="langTab"><span class="name" id="langTabName">Languages &amp; toolchains</span></div>
+      <div class="tab hidden" id="modsTab"><span class="name" id="modsTabName">Mods &amp; themes</span></div>
       <div class="spacer"></div>
-      <button class="new" id="newTop" title="New note (Ctrl+N)"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button class="new" id="newTop" title="New file (Ctrl+N)"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
     </div>
     <div class="crumb"><span>N E O M I N D</span><span>/</span><b id="crumb"></b></div>
 
     <div class="langview hidden" id="langView">
       <div class="lang-head">
         <div>
-          <h2>Languages &amp; toolchains</h2>
-          <p>Toolchain catalog · batch install via winget (Windows)</p>
+          <h2 id="langHead">Languages &amp; toolchains</h2>
+          <p id="langDesc">Toolchain catalog · batch install via winget (Windows)</p>
         </div>
         <div class="lang-actions">
           <button class="btn" id="langRefresh">Refresh</button>
@@ -450,9 +493,9 @@
         </div>
       </div>
       <div class="lang-stats">
-        <span>Total: <b id="lsTotal">0</b></span>
-        <span>Installed: <b id="lsInstalled">0</b></span>
-        <span>Selected: <b id="lsSelected">0</b></span>
+        <span><span id="lsTotalLbl">Total:</span> <b id="lsTotal">0</b></span>
+        <span><span id="lsInstalledLbl">Installed:</span> <b id="lsInstalled">0</b></span>
+        <span><span id="lsSelectedLbl">Selected:</span> <b id="lsSelected">0</b></span>
       </div>
       <div class="lang-grid" id="langGrid"></div>
       <div class="lang-progress hidden" id="langProgress">
@@ -465,7 +508,7 @@
 
     <div class="modsview hidden" id="modsView">
       <div class="ex-empty" id="exEmpty">
-        <div><b>Extensions</b>Select an extension to view its details.<br>Reference catalog only — nothing is installed into NeoMind.</div>
+        <div id="exEmptyText"><b>Extensions</b>Select an extension to view its details.<br>Reference catalog only — nothing is installed into NeoMind.</div>
       </div>
       <div class="ex-detail hidden" id="exDetail">
         <div class="ex-hero">
@@ -480,8 +523,8 @@
           </div>
         </div>
         <div class="ex-tabs">
-          <div class="ex-tab on" data-tab="details">Details</div>
-          <div class="ex-tab" data-tab="tweaks">NeoMind tweaks</div>
+          <div class="ex-tab on" data-tab="details" id="exTabDetails">Details</div>
+          <div class="ex-tab" data-tab="tweaks" id="exTabTweaks">NeoMind tweaks</div>
         </div>
         <div class="ex-body" id="exBody"></div>
       </div>
@@ -491,12 +534,13 @@
       <div class="gutter hidden" id="gutter">1</div>
       <pre class="highlight hidden" id="highlight" aria-hidden="true"></pre>
       <textarea id="text" spellcheck="false" wrap="off" class="hidden" placeholder=""></textarea>
+      <div class="minimap hidden" id="minimap"><canvas id="miniCanvas"></canvas></div>
       <div class="welcome" id="welcome">
         <div class="keys">
-          <div><b>Ctrl N</b> new note</div>
-          <div><b>Ctrl P</b> quick open</div>
-          <div><b>Ctrl F</b> filter list</div>
-          <div><b>Ctrl S</b> save</div>
+          <div><b>Ctrl N</b> <span id="wKeyNew">new note</span></div>
+          <div><b>Ctrl P</b> <span id="wKeyOpen">quick open</span></div>
+          <div><b>Ctrl F</b> <span id="wKeyFilter">filter list</span></div>
+          <div><b>Ctrl S</b> <span id="wKeySave">save</span></div>
         </div>
         <button id="welcomeNew">New note</button>
       </div>
@@ -510,9 +554,19 @@
       </div>
       <div class="r">
         <span class="item" id="pos">Ln 1, Col 1</span>
+        <span class="item"><select id="uiLang" title="UI language">
+          <option value="en">English</option>
+          <option value="ru">Русский</option>
+          <option value="uk">Українська</option>
+          <option value="es">Español</option>
+          <option value="de">Deutsch</option>
+          <option value="fr">Français</option>
+          <option value="zh">中文</option>
+          <option value="ja">日本語</option>
+        </select></span>
         <span class="item"><select id="langMode" title="Syntax highlighting language">
-          <option value="auto">Auto detect</option>
-          <option value="plaintext">Plain Text</option>
+          <option value="auto" id="langModeAuto">Auto detect</option>
+          <option value="plaintext" id="langModePlain">Plain Text</option>
           <option value="javascript">JavaScript</option>
           <option value="typescript">TypeScript</option>
           <option value="python">Python</option>
@@ -535,9 +589,33 @@
 
 <div class="veil hidden" id="palette">
   <div class="dialog">
-    <div class="head">Quick open</div>
+    <div class="head" id="palHead">Quick open</div>
     <input id="palInput" placeholder="Note title..." spellcheck="false">
     <div class="opts" id="palOpts"></div>
+  </div>
+</div>
+
+<div class="veil hidden" id="fileDialog">
+  <div class="dialog">
+    <div class="head" id="fileDlgTitle">New file</div>
+    <label id="fileDlgNameLbl">File name</label>
+    <input id="fileDlgName" placeholder="main.rs" spellcheck="false">
+    <label id="fileDlgFolderLbl">Folder</label>
+    <div class="field">
+      <input id="fileDlgFolder" placeholder="NeoMind / Project" spellcheck="false">
+      <button id="fileDlgBrowse">Browse...</button>
+    </div>
+    <div class="body" id="fileDlgHint">Leave the folder empty to save it inside NeoMind.</div>
+    <div class="foot"><button id="fileDlgNo">Cancel</button><button class="ok" id="fileDlgYes">Create</button></div>
+  </div>
+</div>
+
+<div class="veil hidden" id="projectDialog">
+  <div class="dialog">
+    <div class="head" id="projectDlgTitle">New project</div>
+    <label id="projectDlgNameLbl">Project name</label>
+    <input id="projectDlgName" placeholder="My project" spellcheck="false">
+    <div class="foot"><button id="projectDlgNo">Cancel</button><button class="ok" id="projectDlgYes">Create</button></div>
   </div>
 </div>
 
@@ -560,21 +638,557 @@ let langs=[], langSelected=new Set(), langJob=null, langTimer=null, langBusy=fal
 let modsSearchEl=$('modsSearch');
 let appliedMods=new Set(JSON.parse(localStorage.getItem('nm_mods')||'[]'));
 const TWEAKS=[
-  {id:'compact', name:'Compact UI', desc:'Denser lists and cards'},
-  {id:'no-line', name:'No line numbers', desc:'Hide the editor gutter'},
-  {id:'wide', name:'Wide sidebar', desc:'Fixed 380px sidebar'},
-  {id:'mono', name:'Monospace UI', desc:'Mono font everywhere'},
-  {id:'contrast', name:'High contrast', desc:'Stronger borders and text'},
-  {id:'hide-status', name:'Hide status bar', desc:'More room for notes'},
-  {id:'focus', name:'Focus mode', desc:'Hide all chrome'},
+  {id:'compact', nameKey:'tweak.compact', descKey:'tweak.compactDesc'},
+  {id:'no-line', nameKey:'tweak.no-line', descKey:'tweak.no-lineDesc'},
+  {id:'wide', nameKey:'tweak.wide', descKey:'tweak.wideDesc'},
+  {id:'mono', nameKey:'tweak.mono', descKey:'tweak.monoDesc'},
+  {id:'contrast', nameKey:'tweak.contrast', descKey:'tweak.contrastDesc'},
+  {id:'hide-status', nameKey:'tweak.hide-status', descKey:'tweak.hide-statusDesc'},
+  {id:'focus', nameKey:'tweak.focus', descKey:'tweak.focusDesc'},
+  {id:'minimap', nameKey:'tweak.minimap', descKey:'tweak.minimapDesc'},
 ];
 let currentView='files';
+let folders=readStore('nm_folders',[]);
+if(!Array.isArray(folders))folders=[];
+let folderOpen=readStore('nm_folder_open',{});
+if(!folderOpen||typeof folderOpen!=='object'||Array.isArray(folderOpen))folderOpen={};
+let fileDialogFolder='';
+let highlightTimer=null;
+let coreVersion='', coreStatusOk=false;
+
+/* ---------- interface localization ---------- */
+const SUPPORTED_LOCALES=['en','ru','uk','es','de','fr','zh','ja'];
+const I18N={
+ en:{
+  'app.notes':'NeoMind — Notes','act.explorer':'Explorer','act.folders':'Folders','act.search':'Search (Ctrl+F)',
+  'act.languages':'Languages & toolchains','act.mods':'Mods & themes','act.openData':'Open data folder',
+  'explorer':'Explorer','folders':'Folders','languages':'Languages','extensions':'Extensions',
+  'newNote':'New note','newFile':'New file','newProject':'New project','sort':'Sort','filter':'Filter',
+  'filterFolders':'Filter folders','browse':'Browse...','cancel':'Cancel','create':'Create','delete':'Delete',
+  'close':'Close','save':'Save','saved':'saved','unsaved':'unsaved','noteCreated':'Note created',
+  'fileCreated':'File created','projectCreated':'Project created','noteDeleted':'Note deleted','savedMsg':'Saved',
+  'untitled':'Untitled','noMatches':'No matches','folderEmpty':'Folder is empty','noExtensions':'No extensions',
+  'searching':'Searching Marketplace...','searchFailed':'Search failed:','noDescription':'No description',
+  'uiLanguage':'UI language','syntaxLanguage':'Syntax highlighting language','autoDetect':'Auto detect',
+  'plainText':'Plain Text','rustCore':'Rust core','coreUnavailable':'core unavailable','ln':'Ln','col':'Col',
+  'installed':'installed','notInstalled':'not installed','version':'version','total':'Total',
+  'installedLbl':'Installed','selected':'Selected','install':'Install','installAll':'Install all',
+  'installSelected':'Install selected','refresh':'Refresh','installing':'Installing...','done':'Done',
+  'taskCreated':'Task created','installStarted':'Install started','installFinished':'Install finished',
+  'installErrors':'Install finished with errors','installRunning':'Install is already running',
+  'selectFirst':'Select languages first','group.general':'General','group.web':'Web','group.games':'Games',
+  'group.cybersecurity':'Cybersecurity','group.data':'Data','group.editor':'Editor',
+  'tweaks':'Local UI tweaks','tweaksDesc':'These only restyle the NeoMind workbench. They are stored locally and add no external code.',
+  'tweak.compact':'Compact UI','tweak.compactDesc':'Denser lists and cards','tweak.no-line':'No line numbers',
+  'tweak.no-lineDesc':'Hide the editor gutter','tweak.wide':'Wide sidebar','tweak.wideDesc':'Fixed 380px sidebar',
+  'tweak.mono':'Monospace UI','tweak.monoDesc':'Mono font everywhere','tweak.contrast':'High contrast',
+  'tweak.contrastDesc':'Stronger borders and text','tweak.hide-status':'Hide status bar','tweak.hide-statusDesc':'More room for notes',
+  'tweak.focus':'Focus mode','tweak.focusDesc':'Hide all chrome','tweak.minimap':'Compact minimap',
+  'tweak.minimapDesc':'Hide the code overview','about':'About','details':'Details','identifier':'Identifier',
+  'publisher':'Publisher','kind':'Kind','license':'License','source':'Source','openMarketplace':'Open in Marketplace',
+  'viewSource':'View Source','marketplace':'MARKETPLACE','cosmetic':'COSMETIC','safe':'SAFE',
+  'executesCode':'EXECUTES CODE','referenceNote':'Reference catalog only. NeoMind never downloads, installs or executes extension code.',
+  'codeNote':'This extension executes code in VS Code. It is shown here for reference; nothing is installed in NeoMind.',
+  'deleteTitle':'Delete','deleteBody':'“{name}” will be deleted permanently.','quickOpen':'Quick open',
+  'noteTitle':'Note title...','exitFocus':'Exit focus mode','error':'Error:','errorGeneric':'Error: {detail}',
+  'sortNewest':'Sort: newest first','sortOldest':'Sort: oldest first','sortTitle':'Sort: by title',
+  'syntax':'Syntax: {name}','welcomeNew':'new note','welcomeOpen':'quick open','welcomeFilter':'filter list',
+  'welcomeSave':'save','fileHint':'Leave the folder empty to save it inside NeoMind.','fileName':'File name',
+  'folder':'Folder','projectName':'Project name','note':'note','notes':'notes'
+ },
+ ru:{
+  'app.notes':'NeoMind — Заметки','act.explorer':'Проводник','act.folders':'Папки','act.search':'Поиск (Ctrl+F)',
+  'act.languages':'Языки и инструменты','act.mods':'Моды и темы','act.openData':'Открыть папку данных',
+  'explorer':'Проводник','folders':'Папки','languages':'Языки','extensions':'Расширения',
+  'newNote':'Новая заметка','newFile':'Новый файл','newProject':'Новый проект','sort':'Сортировка','filter':'Фильтр',
+  'filterFolders':'Фильтр папок','browse':'Выбрать...','cancel':'Отмена','create':'Создать','delete':'Удалить',
+  'close':'Закрыть','save':'Сохранить','saved':'сохранено','unsaved':'не сохранено','noteCreated':'Заметка создана',
+  'fileCreated':'Файл создан','projectCreated':'Проект создан','noteDeleted':'Заметка удалена','savedMsg':'Сохранено',
+  'untitled':'Без названия','noMatches':'Совпадений нет','folderEmpty':'Папка пуста','noExtensions':'Расширений нет',
+  'searching':'Поиск в Marketplace...','searchFailed':'Ошибка поиска:','noDescription':'Нет описания',
+  'uiLanguage':'Язык интерфейса','syntaxLanguage':'Язык подсветки','autoDetect':'Автоопределение',
+  'plainText':'Обычный текст','rustCore':'Ядро Rust','coreUnavailable':'ядро недоступно','ln':'Стр','col':'Стл',
+  'installed':'установлено','notInstalled':'не установлено','version':'версия','total':'Всего',
+  'installedLbl':'Установлено','selected':'Выбрано','install':'Установить','installAll':'Установить все',
+  'installSelected':'Установить выбранные','refresh':'Обновить','installing':'Установка...','done':'Готово',
+  'taskCreated':'Задача создана','installStarted':'Установка началась','installFinished':'Установка завершена',
+  'installErrors':'Установка завершена с ошибками','installRunning':'Установка уже идёт',
+  'selectFirst':'Сначала выберите языки','group.general':'Общие','group.web':'Веб','group.games':'Игры',
+  'group.cybersecurity':'Кибербезопасность','group.data':'Данные','group.editor':'Редактор',
+  'tweaks':'Локальные настройки UI','tweaksDesc':'Они только меняют вид NeoMind, хранятся локально и не добавляют внешний код.',
+  'tweak.compact':'Компактный UI','tweak.compactDesc':'Плотные списки и карточки','tweak.no-line':'Без номеров строк',
+  'tweak.no-lineDesc':'Скрыть поле номеров','tweak.wide':'Широкая панель','tweak.wideDesc':'Фиксированная панель 380px',
+  'tweak.mono':'Моноширинный UI','tweak.monoDesc':'Моношрифт везде','tweak.contrast':'Высокий контраст',
+  'tweak.contrastDesc':'Сильнее границы и текст','tweak.hide-status':'Скрыть статус-бар','tweak.hide-statusDesc':'Больше места для заметок',
+  'tweak.focus':'Режим фокуса','tweak.focusDesc':'Скрыть всю обвязку','tweak.minimap':'Компактная миникарта',
+  'tweak.minimapDesc':'Скрыть обзор кода','about':'О расширении','details':'Подробности','identifier':'Идентификатор',
+  'publisher':'Издатель','kind':'Тип','license':'Лицензия','source':'Источник','openMarketplace':'Открыть в Marketplace',
+  'viewSource':'Исходный код','marketplace':'MARKETPLACE','cosmetic':'КОСМЕТИКА','safe':'БЕЗОПАСНО',
+  'executesCode':'ВЫПОЛНЯЕТ КОД','referenceNote':'Только справочный каталог. NeoMind ничего не скачивает, не устанавливает и не выполняет.',
+  'codeNote':'Это расширение выполняет код в VS Code. Здесь оно только для справки; в NeoMind ничего не установлено.',
+  'deleteTitle':'Удалить','deleteBody':'«{name}» будет удалено навсегда.','quickOpen':'Быстрый открытие',
+  'noteTitle':'Название заметки...','exitFocus':'Выйти из режима фокуса','error':'Ошибка:','errorGeneric':'Ошибка: {detail}',
+  'sortNewest':'Сортировка: сначала новые','sortOldest':'Сортировка: сначала старые','sortTitle':'Сортировка: по названию',
+  'syntax':'Подсветка: {name}','welcomeNew':'новая заметка','welcomeOpen':'быстрый открытие','welcomeFilter':'фильтр списка',
+  'welcomeSave':'сохранить','fileHint':'Оставьте папку пустой, чтобы сохранить внутри NeoMind.','fileName':'Имя файла',
+  'folder':'Папка','projectName':'Имя проекта','note':'заметка','notes':'заметок'
+ },
+ uk:{
+  'app.notes':'NeoMind — Нотатки','act.explorer':'Провідник','act.folders':'Папки','act.search':'Пошук (Ctrl+F)',
+  'act.languages':'Мови та інструменти','act.mods':'Моди та теми','act.openData':'Відкрити папку даних',
+  'explorer':'Провідник','folders':'Папки','languages':'Мови','extensions':'Розширення',
+  'newNote':'Нова нотатка','newFile':'Новий файл','newProject':'Новий проєкт','sort':'Сортування','filter':'Фільтр',
+  'filterFolders':'Фільтр папок','browse':'Вибрати...','cancel':'Скасувати','create':'Створити','delete':'Видалити',
+  'close':'Закрити','save':'Зберегти','saved':'збережено','unsaved':'не збережено','noteCreated':'Нотатку створено',
+  'fileCreated':'Файл створено','projectCreated':'Проєкт створено','noteDeleted':'Нотатку видалено','savedMsg':'Збережено',
+  'untitled':'Без назви','noMatches':'Збігів немає','folderEmpty':'Папка порожня','noExtensions':'Розширень немає',
+  'searching':'Пошук у Marketplace...','searchFailed':'Помилка пошуку:','noDescription':'Немає опису',
+  'uiLanguage':'Мова інтерфейсу','syntaxLanguage':'Мова підсвітки','autoDetect':'Автовизначення',
+  'plainText':'Звичайний текст','rustCore':'Ядро Rust','coreUnavailable':'ядро недоступне','ln':'Ряд','col':'Стовп',
+  'installed':'встановлено','notInstalled':'не встановлено','version':'версія','total':'Усього',
+  'installedLbl':'Встановлено','selected':'Вибрано','install':'Встановити','installAll':'Встановити все',
+  'installSelected':'Встановити вибрані','refresh':'Оновити','installing':'Встановлення...','done':'Готово',
+  'taskCreated':'Завдання створено','installStarted':'Встановлення почалося','installFinished':'Встановлення завершено',
+  'installErrors':'Встановлення завершено з помилками','installRunning':'Встановлення вже триває',
+  'selectFirst':'Спочатку виберіть мови','group.general':'Загальні','group.web':'Веб','group.games':'Ігри',
+  'group.cybersecurity':'Кібербезпека','group.data':'Дані','group.editor':'Редактор',
+  'tweaks':'Локальні налаштування UI','tweaksDesc':'Вони лише змінюють вигляд NeoMind, зберігаються локально і не додають зовнішнього коду.',
+  'tweak.compact':'Компактний UI','tweak.compactDesc':'Щільні списки та картки','tweak.no-line':'Без номерів рядків',
+  'tweak.no-lineDesc':'Приховати поле номерів','tweak.wide':'Широка панель','tweak.wideDesc':'Фіксована панель 380px',
+  'tweak.mono':'Моноширинний UI','tweak.monoDesc':'Моношрифт скрізь','tweak.contrast':'Високий контраст',
+  'tweak.contrastDesc':'Сильніші межі та текст','tweak.hide-status':'Приховати статус-бар','tweak.hide-statusDesc':'Більше місця для нотаток',
+  'tweak.focus':'Режим фокусу','tweak.focusDesc':'Приховати все оточення','tweak.minimap':'Компактна мінімапа',
+  'tweak.minimapDesc':'Приховати огляд коду','about':'Про розширення','details':'Деталі','identifier':'Ідентифікатор',
+  'publisher':'Видавець','kind':'Тип','license':'Ліцензія','source':'Джерело','openMarketplace':'Відкрити в Marketplace',
+  'viewSource':'Вихідний код','marketplace':'MARKETPLACE','cosmetic':'КОСМЕТИКА','safe':'БЕЗПЕЧНО',
+  'executesCode':'ВИКОНУЄ КОД','referenceNote':'Лише довідковий каталог. NeoMind нічого не завантажує, не встановлює і не виконує.',
+  'codeNote':'Це розширення виконує код у VS Code. Тут воно лише для довідки; у NeoMind нічого не встановлено.',
+  'deleteTitle':'Видалити','deleteBody':'«{name}» буде видалено назавжди.','quickOpen':'Швидке відкриття',
+  'noteTitle':'Назва нотатки...','exitFocus':'Вийти з режиму фокусу','error':'Помилка:','errorGeneric':'Помилка: {detail}',
+  'sortNewest':'Сортування: спочатку нові','sortOldest':'Сортування: спочатку старі','sortTitle':'Сортування: за назвою',
+  'syntax':'Підсвітка: {name}','welcomeNew':'нова нотатка','welcomeOpen':'швидке відкриття','welcomeFilter':'фільтр списку',
+  'welcomeSave':'зберегти','fileHint':'Залиште папку порожньою, щоб зберегти всередині NeoMind.','fileName':'Ім’я файлу',
+  'folder':'Папка','projectName':'Назва проєкту','note':'нотатка','notes':'нотаток'
+ },
+ es:{
+  'app.notes':'NeoMind — Notas','act.explorer':'Explorador','act.folders':'Carpetas','act.search':'Buscar (Ctrl+F)',
+  'act.languages':'Lenguajes y herramientas','act.mods':'Mods y temas','act.openData':'Abrir carpeta de datos',
+  'explorer':'Explorador','folders':'Carpetas','languages':'Lenguajes','extensions':'Extensiones',
+  'newNote':'Nueva nota','newFile':'Nuevo archivo','newProject':'Nuevo proyecto','sort':'Ordenar','filter':'Filtrar',
+  'filterFolders':'Filtrar carpetas','browse':'Examinar...','cancel':'Cancelar','create':'Crear','delete':'Eliminar',
+  'close':'Cerrar','save':'Guardar','saved':'guardado','unsaved':'sin guardar','noteCreated':'Nota creada',
+  'fileCreated':'Archivo creado','projectCreated':'Proyecto creado','noteDeleted':'Nota eliminada','savedMsg':'Guardado',
+  'untitled':'Sin título','noMatches':'Sin resultados','folderEmpty':'Carpeta vacía','noExtensions':'Sin extensiones',
+  'searching':'Buscando en Marketplace...','searchFailed':'Error de búsqueda:','noDescription':'Sin descripción',
+  'uiLanguage':'Idioma de la interfaz','syntaxLanguage':'Idioma de resaltado','autoDetect':'Detección automática',
+  'plainText':'Texto plano','rustCore':'Núcleo Rust','coreUnavailable':'núcleo no disponible','ln':'Lín','col':'Col',
+  'installed':'instalado','notInstalled':'no instalado','version':'versión','total':'Total',
+  'installedLbl':'Instalado','selected':'Seleccionado','install':'Instalar','installAll':'Instalar todo',
+  'installSelected':'Instalar seleccionados','refresh':'Actualizar','installing':'Instalando...','done':'Listo',
+  'taskCreated':'Tarea creada','installStarted':'Instalación iniciada','installFinished':'Instalación finalizada',
+  'installErrors':'Instalación finalizada con errores','installRunning':'Ya hay una instalación en curso',
+  'selectFirst':'Selecciona lenguajes primero','group.general':'General','group.web':'Web','group.games':'Juegos',
+  'group.cybersecurity':'Ciberseguridad','group.data':'Datos','group.editor':'Editor',
+  'tweaks':'Ajustes locales de UI','tweaksDesc':'Solo cambian el aspecto de NeoMind, se guardan localmente y no añaden código externo.',
+  'tweak.compact':'UI compacta','tweak.compactDesc':'Listas y tarjetas más densas','tweak.no-line':'Sin números de línea',
+  'tweak.no-lineDesc':'Ocultar el margen de números','tweak.wide':'Barra lateral ancha','tweak.wideDesc':'Barra fija de 380px',
+  'tweak.mono':'UI monoespacio','tweak.monoDesc':'Fuente monoespacio en todo','tweak.contrast':'Alto contraste',
+  'tweak.contrastDesc':'Bordes y texto más fuertes','tweak.hide-status':'Ocultar barra de estado','tweak.hide-statusDesc':'Más espacio para notas',
+  'tweak.focus':'Modo enfoque','tweak.focusDesc':'Ocultar todos los marcos','tweak.minimap':'Minimapa compacto',
+  'tweak.minimapDesc':'Ocultar la vista general del código','about':'Acerca de','details':'Detalles','identifier':'Identificador',
+  'publisher':'Publicador','kind':'Tipo','license':'Licencia','source':'Fuente','openMarketplace':'Abrir en Marketplace',
+  'viewSource':'Ver código fuente','marketplace':'MARKETPLACE','cosmetic':'COSMÉTICO','safe':'SEGURO',
+  'executesCode':'EJECUTA CÓDIGO','referenceNote':'Catálogo solo de referencia. NeoMind nunca descarga, instala ni ejecuta código de extensiones.',
+  'codeNote':'Esta extensión ejecuta código en VS Code. Aquí aparece solo como referencia; nada se instala en NeoMind.',
+  'deleteTitle':'Eliminar','deleteBody':'«{name}» se eliminará permanentemente.','quickOpen':'Apertura rápida',
+  'noteTitle':'Título de la nota...','exitFocus':'Salir del modo enfoque','error':'Error:','errorGeneric':'Error: {detail}',
+  'sortNewest':'Orden: más recientes primero','sortOldest':'Orden: más antiguos primero','sortTitle':'Orden: por título',
+  'syntax':'Sintaxis: {name}','welcomeNew':'nueva nota','welcomeOpen':'apertura rápida','welcomeFilter':'filtrar lista',
+  'welcomeSave':'guardar','fileHint':'Deja la carpeta vacía para guardar dentro de NeoMind.','fileName':'Nombre del archivo',
+  'folder':'Carpeta','projectName':'Nombre del proyecto','note':'nota','notes':'notas'
+ },
+ de:{
+  'app.notes':'NeoMind — Notizen','act.explorer':'Explorer','act.folders':'Ordner','act.search':'Suchen (Strg+F)',
+  'act.languages':'Sprachen und Werkzeuge','act.mods':'Mods und Designs','act.openData':'Datenordner öffnen',
+  'explorer':'Explorer','folders':'Ordner','languages':'Sprachen','extensions':'Erweiterungen',
+  'newNote':'Neue Notiz','newFile':'Neue Datei','newProject':'Neues Projekt','sort':'Sortieren','filter':'Filtern',
+  'filterFolders':'Ordner filtern','browse':'Durchsuchen...','cancel':'Abbrechen','create':'Erstellen','delete':'Löschen',
+  'close':'Schließen','save':'Speichern','saved':'gespeichert','unsaved':'ungespeichert','noteCreated':'Notiz erstellt',
+  'fileCreated':'Datei erstellt','projectCreated':'Projekt erstellt','noteDeleted':'Notiz gelöscht','savedMsg':'Gespeichert',
+  'untitled':'Unbenannt','noMatches':'Keine Treffer','folderEmpty':'Ordner leer','noExtensions':'Keine Erweiterungen',
+  'searching':'Marketplace wird durchsucht...','searchFailed':'Suche fehlgeschlagen:','noDescription':'Keine Beschreibung',
+  'uiLanguage':'Oberflächensprache','syntaxLanguage':'Hervorhebungssprache','autoDetect':'Automatisch erkennen',
+  'plainText':'Klartext','rustCore':'Rust-Kern','coreUnavailable':'Kern nicht verfügbar','ln':'Zeile','col':'Spalte',
+  'installed':'installiert','notInstalled':'nicht installiert','version':'Version','total':'Gesamt',
+  'installedLbl':'Installiert','selected':'Ausgewählt','install':'Installieren','installAll':'Alle installieren',
+  'installSelected':'Auswahl installieren','refresh':'Aktualisieren','installing':'Installation...','done':'Fertig',
+  'taskCreated':'Aufgabe erstellt','installStarted':'Installation gestartet','installFinished':'Installation abgeschlossen',
+  'installErrors':'Installation mit Fehlern abgeschlossen','installRunning':'Installation läuft bereits',
+  'selectFirst':'Zuerst Sprachen auswählen','group.general':'Allgemein','group.web':'Web','group.games':'Spiele',
+  'group.cybersecurity':'Cybersicherheit','group.data':'Daten','group.editor':'Editor',
+  'tweaks':'Lokale UI-Optionen','tweaksDesc':'Sie ändern nur das Aussehen von NeoMind, werden lokal gespeichert und fügen keinen externen Code hinzu.',
+  'tweak.compact':'Kompakte UI','tweak.compactDesc':'Dichtere Listen und Karten','tweak.no-line':'Keine Zeilennummern',
+  'tweak.no-lineDesc':'Zeilennummern ausblenden','tweak.wide':'Breite Seitenleiste','tweak.wideDesc':'Feste 380px Seitenleiste',
+  'tweak.mono':'Monospace-UI','tweak.monoDesc':'Überall Monospace-Schrift','tweak.contrast':'Hoher Kontrast',
+  'tweak.contrastDesc':'Stärkere Ränder und Text','tweak.hide-status':'Statusleiste ausblenden','tweak.hide-statusDesc':'Mehr Platz für Notizen',
+  'tweak.focus':'Fokusmodus','tweak.focusDesc':'Alle Umrandungen ausblenden','tweak.minimap':'Kompakte Minimap',
+  'tweak.minimapDesc':'Codeübersicht ausblenden','about':'Über','details':'Details','identifier':'Kennung',
+  'publisher':'Herausgeber','kind':'Typ','license':'Lizenz','source':'Quelle','openMarketplace':'Im Marketplace öffnen',
+  'viewSource':'Quellcode ansehen','marketplace':'MARKETPLACE','cosmetic':'KOSMETISCH','safe':'SICHER',
+  'executesCode':'FÜHRT CODE AUS','referenceNote':'Nur Referenzkatalog. NeoMind lädt, installiert und führt keinen Erweiterungscode aus.',
+  'codeNote':'Diese Erweiterung führt Code in VS Code aus. Hier wird sie nur zur Referenz gezeigt; in NeoMind wird nichts installiert.',
+  'deleteTitle':'Löschen','deleteBody':'„{name}“ wird dauerhaft gelöscht.','quickOpen':'Schnell öffnen',
+  'noteTitle':'Notiztitel...','exitFocus':'Fokusmodus beenden','error':'Fehler:','errorGeneric':'Fehler: {detail}',
+  'sortNewest':'Sortierung: neueste zuerst','sortOldest':'Sortierung: älteste zuerst','sortTitle':'Sortierung: nach Titel',
+  'syntax':'Syntax: {name}','welcomeNew':'neue Notiz','welcomeOpen':'schnell öffnen','welcomeFilter':'Liste filtern',
+  'welcomeSave':'speichern','fileHint':'Leer lassen, um innerhalb von NeoMind zu speichern.','fileName':'Dateiname',
+  'folder':'Ordner','projectName':'Projektname','note':'Notiz','notes':'Notizen'
+ },
+ fr:{
+  'app.notes':'NeoMind — Notes','act.explorer':'Explorateur','act.folders':'Dossiers','act.search':'Rechercher (Ctrl+F)',
+  'act.languages':'Langages et outils','act.mods':'Mods et thèmes','act.openData':'Ouvrir le dossier de donnees',
+  'explorer':'Explorateur','folders':'Dossiers','languages':'Langages','extensions':'Extensions',
+  'newNote':'Nouvelle note','newFile':'Nouveau fichier','newProject':'Nouveau projet','sort':'Trier','filter':'Filtrer',
+  'filterFolders':'Filtrer les dossiers','browse':'Parcourir...','cancel':'Annuler','create':'Creer','delete':'Supprimer',
+  'close':'Fermer','save':'Enregistrer','saved':'enregistre','unsaved':'non enregistre','noteCreated':'Note creee',
+  'fileCreated':'Fichier cree','projectCreated':'Projet cree','noteDeleted':'Note supprimee','savedMsg':'Enregistre',
+  'untitled':'Sans titre','noMatches':'Aucun resultat','folderEmpty':'Dossier vide','noExtensions':'Aucune extension',
+  'searching':'Recherche sur le Marketplace...','searchFailed':'Echec de la recherche:','noDescription':'Aucune description',
+  'uiLanguage':'Langue de l interface','syntaxLanguage':'Langage de coloration','autoDetect':'Detection automatique',
+  'plainText':'Texte brut','rustCore':'Noyau Rust','coreUnavailable':'noyau indisponible','ln':'Lgn','col':'Col',
+  'installed':'installe','notInstalled':'non installe','version':'version','total':'Total',
+  'installedLbl':'Installe','selected':'Selectionne','install':'Installer','installAll':'Tout installer',
+  'installSelected':'Installer la selection','refresh':'Actualiser','installing':'Installation...','done':'Termine',
+  'taskCreated':'Tache creee','installStarted':'Installation lancee','installFinished':'Installation terminee',
+  'installErrors':'Installation terminee avec erreurs','installRunning':'Une installation est deja en cours',
+  'selectFirst':'Selectionnez d abord des langages','group.general':'General','group.web':'Web','group.games':'Jeux',
+  'group.cybersecurity':'Cybersecurite','group.data':'Donnees','group.editor':'Editeur',
+  'tweaks':'Options locales de l UI','tweaksDesc':'Elles ne changent que l apparence de NeoMind, sont stockees localement et n ajoutent aucun code externe.',
+  'tweak.compact':'UI compacte','tweak.compactDesc':'Listes et cartes plus denses','tweak.no-line':'Sans numeros de ligne',
+  'tweak.no-lineDesc':'Masquer la colonne des numeros','tweak.wide':'Barre laterale large','tweak.wideDesc':'Barre fixe de 380px',
+  'tweak.mono':'UI monospace','tweak.monoDesc':'Police monospace partout','tweak.contrast':'Contraste eleve',
+  'tweak.contrastDesc':'Bordures et texte plus forts','tweak.hide-status':'Masquer la barre de statut','tweak.hide-statusDesc':'Plus de place pour les notes',
+  'tweak.focus':'Mode concentration','tweak.focusDesc':'Masquer tous les cadres','tweak.minimap':'Minicarte compacte',
+  'tweak.minimapDesc':'Masquer la vue d ensemble du code','about':'A propos','details':'Details','identifier':'Identifiant',
+  'publisher':'Editeur','kind':'Type','license':'Licence','source':'Source','openMarketplace':'Ouvrir dans le Marketplace',
+  'viewSource':'Voir la source','marketplace':'MARKETPLACE','cosmetic':'COSMETIQUE','safe':'SUR',
+  'executesCode':'EXECUTE DU CODE','referenceNote':'Catalogue de reference uniquement. NeoMind ne telecharge, n installe et n execute aucun code d extension.',
+  'codeNote':'Cette extension execute du code dans VS Code. Elle est presentee ici a titre de reference; rien n est installe dans NeoMind.',
+  'deleteTitle':'Supprimer','deleteBody':'« {name} » sera supprime definitivement.','quickOpen':'Ouverture rapide',
+  'noteTitle':'Titre de la note...','exitFocus':'Quitter le mode concentration','error':'Erreur:','errorGeneric':'Erreur: {detail}',
+  'sortNewest':'Tri: plus recents d abord','sortOldest':'Tri: plus anciens d abord','sortTitle':'Tri: par titre',
+  'syntax':'Syntaxe: {name}','welcomeNew':'nouvelle note','welcomeOpen':'ouverture rapide','welcomeFilter':'filtrer la liste',
+  'welcomeSave':'enregistrer','fileHint':'Laissez le dossier vide pour enregistrer dans NeoMind.','fileName':'Nom du fichier',
+  'folder':'Dossier','projectName':'Nom du projet','note':'note','notes':'notes'
+ },
+ zh:{
+  'app.notes':'NeoMind — 笔记','act.explorer':'资源管理器','act.folders':'文件夹','act.search':'搜索 (Ctrl+F)',
+  'act.languages':'语言与工具链','act.mods':'扩展与主题','act.openData':'打开数据文件夹',
+  'explorer':'资源管理器','folders':'文件夹','languages':'语言','extensions':'扩展',
+  'newNote':'新建笔记','newFile':'新建文件','newProject':'新建项目','sort':'排序','filter':'筛选',
+  'filterFolders':'筛选文件夹','browse':'浏览...','cancel':'取消','create':'创建','delete':'删除',
+  'close':'关闭','save':'保存','saved':'已保存','unsaved':'未保存','noteCreated':'笔记已创建',
+  'fileCreated':'文件已创建','projectCreated':'项目已创建','noteDeleted':'笔记已删除','savedMsg':'已保存',
+  'untitled':'无标题','noMatches':'无匹配项','folderEmpty':'文件夹为空','noExtensions':'没有扩展',
+  'searching':'正在搜索 Marketplace...','searchFailed':'搜索失败:','noDescription':'无描述',
+  'uiLanguage':'界面语言','syntaxLanguage':'语法高亮语言','autoDetect':'自动检测',
+  'plainText':'纯文本','rustCore':'Rust 内核','coreUnavailable':'内核不可用','ln':'行','col':'列',
+  'installed':'已安装','notInstalled':'未安装','version':'版本','total':'总计',
+  'installedLbl':'已安装','selected':'已选择','install':'安装','installAll':'全部安装',
+  'installSelected':'安装所选','refresh':'刷新','installing':'安装中...','done':'完成',
+  'taskCreated':'任务已创建','installStarted':'安装已开始','installFinished':'安装已完成',
+  'installErrors':'安装完成但有错误','installRunning':'安装正在进行中','selectFirst':'请先选择语言',
+  'group.general':'通用','group.web':'网页','group.games':'游戏','group.cybersecurity':'网络安全',
+  'group.data':'数据','group.editor':'编辑器','tweaks':'本地界面调整','tweaksDesc':'这些只改变 NeoMind 外观，保存在本地，不添加外部代码。',
+  'tweak.compact':'紧凑界面','tweak.compactDesc':'更密集的列表和卡片','tweak.no-line':'隐藏行号',
+  'tweak.no-lineDesc':'隐藏编辑器行号栏','tweak.wide':'宽侧边栏','tweak.wideDesc':'固定 380px 侧边栏',
+  'tweak.mono':'等宽界面','tweak.monoDesc':'全部使用等宽字体','tweak.contrast':'高对比度',
+  'tweak.contrastDesc':'更强的边框和文字','tweak.hide-status':'隐藏状态栏','tweak.hide-statusDesc':'给笔记更多空间',
+  'tweak.focus':'专注模式','tweak.focusDesc':'隐藏所有边框界面','tweak.minimap':'紧凑缩略图',
+  'tweak.minimapDesc':'隐藏代码概览','about':'关于','details':'详情','identifier':'标识符',
+  'publisher':'发布者','kind':'类型','license':'许可证','source':'来源','openMarketplace':'在 Marketplace 打开',
+  'viewSource':'查看源代码','marketplace':'MARKETPLACE','cosmetic':'装饰','safe':'安全',
+  'executesCode':'执行代码','referenceNote':'仅作参考目录。NeoMind 不会下载、安装或执行扩展代码。',
+  'codeNote':'此扩展会在 VS Code 中执行代码。这里仅作参考，NeoMind 中不会安装任何内容。',
+  'deleteTitle':'删除','deleteBody':'“{name}” 将被永久删除。','quickOpen':'快速打开',
+  'noteTitle':'笔记标题...','exitFocus':'退出专注模式','error':'错误:','errorGeneric':'错误: {detail}',
+  'sortNewest':'排序: 最新优先','sortOldest':'排序: 最旧优先','sortTitle':'排序: 按标题',
+  'syntax':'语法: {name}','welcomeNew':'新建笔记','welcomeOpen':'快速打开','welcomeFilter':'筛选列表',
+  'welcomeSave':'保存','fileHint':'留空则保存在 NeoMind 内部。','fileName':'文件名','folder':'文件夹',
+  'projectName':'项目名称','note':'条笔记','notes':'条笔记'
+ },
+ ja:{
+  'app.notes':'NeoMind — ノート','act.explorer':'エクスプローラー','act.folders':'フォルダー','act.search':'検索 (Ctrl+F)',
+  'act.languages':'言語とツール','act.mods':'MODとテーマ','act.openData':'データフォルダーを開く',
+  'explorer':'エクスプローラー','folders':'フォルダー','languages':'言語','extensions':'拡張機能',
+  'newNote':'新しいノート','newFile':'新しいファイル','newProject':'新しいプロジェクト','sort':'並べ替え','filter':'フィルター',
+  'filterFolders':'フォルダーをフィルター','browse':'参照...','cancel':'キャンセル','create':'作成','delete':'削除',
+  'close':'閉じる','save':'保存','saved':'保存済み','unsaved':'未保存','noteCreated':'ノートを作成しました',
+  'fileCreated':'ファイルを作成しました','projectCreated':'プロジェクトを作成しました','noteDeleted':'ノートを削除しました','savedMsg':'保存しました',
+  'untitled':'無題','noMatches':'一致する項目なし','folderEmpty':'フォルダーは空です','noExtensions':'拡張機能なし',
+  'searching':'Marketplace を検索中...','searchFailed':'検索に失敗しました:','noDescription':'説明なし',
+  'uiLanguage':'UI 言語','syntaxLanguage':'構文ハイライト言語','autoDetect':'自動検出',
+  'plainText':'プレーンテキスト','rustCore':'Rust コア','coreUnavailable':'コアを利用できません','ln':'行','col':'列',
+  'installed':'インストール済み','notInstalled':'未インストール','version':'バージョン','total':'合計',
+  'installedLbl':'インストール済み','selected':'選択中','install':'インストール','installAll':'すべてインストール',
+  'installSelected':'選択したものをインストール','refresh':'更新','installing':'インストール中...','done':'完了',
+  'taskCreated':'タスクを作成しました','installStarted':'インストールを開始しました','installFinished':'インストールが完了しました',
+  'installErrors':'インストールがエラーで完了しました','installRunning':'インストールは既に実行中です',
+  'selectFirst':'先に言語を選択してください','group.general':'一般','group.web':'ウェブ','group.games':'ゲーム',
+  'group.cybersecurity':'サイバーセキュリティ','group.data':'データ','group.editor':'エディター',
+  'tweaks':'ローカル UI 調整','tweaksDesc':'NeoMind の外観のみ変更します。ローカルに保存され、外部コードは追加しません。',
+  'tweak.compact':'コンパクト UI','tweak.compactDesc':' denser なリストとカード','tweak.no-line':'行番号なし',
+  'tweak.no-lineDesc':'行番号欄を非表示','tweak.wide':'広いサイドバー','tweak.wideDesc':'固定 380px サイドバー',
+  'tweak.mono':'等幅 UI','tweak.monoDesc':'全体を等幅フォントに','tweak.contrast':'高コントラスト',
+  'tweak.contrastDesc':'境界線と文字を強調','tweak.hide-status':'ステータスバーを非表示','tweak.hide-statusDesc':'ノートの領域を広げる',
+  'tweak.focus':'フォーカスモード','tweak.focusDesc':'すべての枠を非表示','tweak.minimap':'コンパクト ミニマップ',
+  'tweak.minimapDesc':'コード概要を非表示','about':'概要','details':'詳細','identifier':'識別子',
+  'publisher':'発行者','kind':'種類','license':'ライセンス','source':'ソース','openMarketplace':'Marketplace で開く',
+  'viewSource':'ソースを見る','marketplace':'MARKETPLACE','cosmetic':'装飾','safe':'安全',
+  'executesCode':'コードを実行','referenceNote':'参考カタログのみです。NeoMind は拡張機能のコードをダウンロード、インストール、実行しません。',
+  'codeNote':'この拡張機能は VS Code でコードを実行します。ここでは参考用で、NeoMind には何もインストールされません。',
+  'deleteTitle':'削除','deleteBody':'“{name}” は完全に削除されます。','quickOpen':'クイックオープン',
+  'noteTitle':'ノートのタイトル...','exitFocus':'フォーカスモードを終了','error':'エラー:','errorGeneric':'エラー: {detail}',
+  'sortNewest':'並べ替え: 新しい順','sortOldest':'並べ替え: 古い順','sortTitle':'並べ替え: タイトル順',
+  'syntax':'構文: {name}','welcomeNew':'新しいノート','welcomeOpen':'クイックオープン','welcomeFilter':'リストをフィルター',
+  'welcomeSave':'保存','fileHint':'空欄にすると NeoMind 内部に保存します。','fileName':'ファイル名','folder':'フォルダー',
+  'projectName':'プロジェクト名','note':'件のノート','notes':'件のノート'
+ }
+};
+/* Additional keys kept separately so the main dictionary stays readable. */
+const I18N_EXTRA={
+ en:{
+  'selectFolder':'Select folder','marketplaceSearch':'Search Extensions in Marketplace','refreshList':'Refresh list','reloadCatalog':'Reload catalog',
+  'sortBy':'Sort by','mostInstalled':'Most installed','highestRated':'Highest rated','nameOption':'Name',
+  'showCosmetic':'Show cosmetic-only picks','langDesc':'Toolchain catalog · batch install via winget (Windows)',
+  'totalLbl':'Total:','selectedLbl':'Selected:','extEmptyBody':'Select an extension to view its details.',
+  'extDetails':'Details','extTweaks':'NeoMind tweaks','installs':'installs','rating':'rating','reviews':'reviews',
+  'noDescAvailable':'No description available.','installingLabel':'Installing','installingPrefix':'Installing:',
+  'modEnabled':'Mod enabled','modDisabled':'Mod disabled','deleteNote':'Delete note',
+  'newNoteShortcut':'New note (Ctrl+N)','newFileShortcut':'New file (Ctrl+N)','catCatalog':'CATALOG',
+  'referenceOnly':'Reference catalog only — nothing is installed into NeoMind.','shown':'shown','top100':'Top 100',
+  'cosmetic':'Cosmetic','unassigned':'NeoMind','errorInvalidName':'Invalid file name',
+  'errorCore':'Core failed','errorInvalidId':'Invalid note id','errorTooLong':'File is too long (max 20000 characters)',
+  'errorNoLangs':'Select languages first','errorUnknownJob':'Unknown install job'
+ },
+ ru:{
+  'selectFolder':'Выберите папку','marketplaceSearch':'Поиск расширений в Marketplace','refreshList':'Обновить список','reloadCatalog':'Перезагрузить каталог',
+  'sortBy':'Сортировка по','mostInstalled':'По установкам','highestRated':'По рейтингу','nameOption':'Имя',
+  'showCosmetic':'Показать только косметические','langDesc':'Каталог инструментов · пакетная установка через winget (Windows)',
+  'totalLbl':'Всего:','selectedLbl':'Выбрано:','extEmptyBody':'Выберите расширение, чтобы увидеть подробности.',
+  'extDetails':'Подробности','extTweaks':'Настройки NeoMind','installs':'установок','rating':'рейтинг','reviews':'отзывов',
+  'noDescAvailable':'Описание отсутствует.','installingLabel':'Установка','installingPrefix':'Установка:',
+  'modEnabled':'Мод включён','modDisabled':'Мод выключен','deleteNote':'Удалить заметку',
+  'newNoteShortcut':'Новая заметка (Ctrl+N)','newFileShortcut':'Новый файл (Ctrl+N)','catCatalog':'КАТАЛОГ',
+  'referenceOnly':'Только справочный каталог — в NeoMind ничего не устанавливается.','shown':'показано','top100':'Топ-100',
+  'cosmetic':'Косметика','unassigned':'NeoMind','errorInvalidName':'Недопустимое имя файла',
+  'errorCore':'Ошибка ядра','errorInvalidId':'Неверный ID заметки','errorTooLong':'Файл слишком большой (макс. 20000 символов)',
+  'errorNoLangs':'Сначала выберите языки','errorUnknownJob':'Неизвестная задача установки'
+ },
+ uk:{
+  'selectFolder':'Виберіть папку','marketplaceSearch':'Пошук розширень у Marketplace','refreshList':'Оновити список','reloadCatalog':'Перезавантажити каталог',
+  'sortBy':'Сортувати за','mostInstalled':'За встановленнями','highestRated':'За рейтингом','nameOption':'Назва',
+  'showCosmetic':'Показати лише косметичні','langDesc':'Каталог інструментів · пакетне встановлення через winget (Windows)',
+  'totalLbl':'Усього:','selectedLbl':'Вибрано:','extEmptyBody':'Виберіть розширення, щоб побачити деталі.',
+  'extDetails':'Деталі','extTweaks':'Налаштування NeoMind','installs':'встановлень','rating':'рейтинг','reviews':'відгуків',
+  'noDescAvailable':'Опис відсутній.','installingLabel':'Встановлення','installingPrefix':'Встановлення:',
+  'modEnabled':'Мод увімкнено','modDisabled':'Мод вимкнено','deleteNote':'Видалити нотатку',
+  'newNoteShortcut':'Нова нотатка (Ctrl+N)','newFileShortcut':'Новий файл (Ctrl+N)','catCatalog':'КАТАЛОГ',
+  'referenceOnly':'Лише довідковий каталог — у NeoMind нічого не встановлюється.','shown':'показано','top100':'Топ-100',
+  'cosmetic':'Косметика','unassigned':'NeoMind','errorInvalidName':'Недопустиме ім’я файлу',
+  'errorCore':'Помилка ядра','errorInvalidId':'Неправильний ID нотатки','errorTooLong':'Файл занадто великий (макс. 20000 символів)',
+  'errorNoLangs':'Спочатку виберіть мови','errorUnknownJob':'Невідоме завдання встановлення'
+ },
+ es:{
+  'selectFolder':'Seleccionar carpeta','marketplaceSearch':'Buscar extensiones en Marketplace','refreshList':'Actualizar lista','reloadCatalog':'Recargar catálogo',
+  'sortBy':'Ordenar por','mostInstalled':'Más instalados','highestRated':'Mejor valorados','nameOption':'Nombre',
+  'showCosmetic':'Mostrar solo cosméticos','langDesc':'Catálogo de herramientas · instalación por lotes con winget (Windows)',
+  'totalLbl':'Total:','selectedLbl':'Seleccionado:','extEmptyBody':'Selecciona una extensión para ver sus detalles.',
+  'extDetails':'Detalles','extTweaks':'Ajustes de NeoMind','installs':'instalaciones','rating':'valoración','reviews':'opiniones',
+  'noDescAvailable':'No hay descripción disponible.','installingLabel':'Instalando','installingPrefix':'Instalando:',
+  'modEnabled':'Mod activado','modDisabled':'Mod desactivado','deleteNote':'Eliminar nota',
+  'newNoteShortcut':'Nueva nota (Ctrl+N)','newFileShortcut':'Nuevo archivo (Ctrl+N)','catCatalog':'CATÁLOGO',
+  'referenceOnly':'Catálogo de referencia · no se instala nada en NeoMind.','shown':'mostrados','top100':'Top 100',
+  'cosmetic':'Cosmético','unassigned':'NeoMind','errorInvalidName':'Nombre de archivo no válido',
+  'errorCore':'Error del núcleo','errorInvalidId':'ID de nota no válido','errorTooLong':'Archivo demasiado largo (máx. 20000 caracteres)',
+  'errorNoLangs':'Selecciona lenguajes primero','errorUnknownJob':'Tarea de instalación desconocida'
+ },
+ de:{
+  'selectFolder':'Ordner auswählen','marketplaceSearch':'Erweiterungen im Marketplace suchen','refreshList':'Liste aktualisieren','reloadCatalog':'Katalog neu laden',
+  'sortBy':'Sortieren nach','mostInstalled':'Meist installiert','highestRated':'Best bewertet','nameOption':'Name',
+  'showCosmetic':'Nur kosmetische anzeigen','langDesc':'Toolchain-Katalog · Stapelinstallation über winget (Windows)',
+  'totalLbl':'Gesamt:','selectedLbl':'Ausgewählt:','extEmptyBody':'Wähle eine Erweiterung, um Details zu sehen.',
+  'extDetails':'Details','extTweaks':'NeoMind-Optionen','installs':'Installationen','rating':'Bewertung','reviews':'Rezensionen',
+  'noDescAvailable':'Keine Beschreibung verfügbar.','installingLabel':'Installation','installingPrefix':'Installation:',
+  'modEnabled':'Mod aktiviert','modDisabled':'Mod deaktiviert','deleteNote':'Notiz löschen',
+  'newNoteShortcut':'Neue Notiz (Strg+N)','newFileShortcut':'Neue Datei (Strg+N)','catCatalog':'KATALOG',
+  'referenceOnly':'Nur Referenzkatalog · in NeoMind wird nichts installiert.','shown':'angezeigt','top100':'Top 100',
+  'cosmetic':'Kosmetisch','unassigned':'NeoMind','errorInvalidName':'Ungültiger Dateiname',
+  'errorCore':'Kernfehler','errorInvalidId':'Ungültige Notiz-ID','errorTooLong':'Datei zu lang (max. 20000 Zeichen)',
+  'errorNoLangs':'Zuerst Sprachen auswählen','errorUnknownJob':'Unbekannter Installationsauftrag'
+ },
+ fr:{
+  'selectFolder':'Sélectionner un dossier','marketplaceSearch':'Rechercher des extensions dans le Marketplace','refreshList':'Actualiser la liste','reloadCatalog':'Recharger le catalogue',
+  'sortBy':'Trier par','mostInstalled':'Les plus installées','highestRated':'Mieux notées','nameOption':'Nom',
+  'showCosmetic':'Afficher seulement les cosmétiques','langDesc':'Catalogue d outils · installation groupée via winget (Windows)',
+  'totalLbl':'Total :','selectedLbl':'Sélectionné :','extEmptyBody':'Sélectionnez une extension pour voir ses détails.',
+  'extDetails':'Détails','extTweaks':'Options NeoMind','installs':'installations','rating':'note','reviews':'avis',
+  'noDescAvailable':'Aucune description disponible.','installingLabel':'Installation','installingPrefix':'Installation :',
+  'modEnabled':'Mod activé','modDisabled':'Mod désactivé','deleteNote':'Supprimer la note',
+  'newNoteShortcut':'Nouvelle note (Ctrl+N)','newFileShortcut':'Nouveau fichier (Ctrl+N)','catCatalog':'CATALOGUE',
+  'referenceOnly':'Catalogue de référence · rien n est installé dans NeoMind.','shown':'affichées','top100':'Top 100',
+  'cosmetic':'Cosmétique','unassigned':'NeoMind','errorInvalidName':'Nom de fichier invalide',
+  'errorCore':'Erreur du noyau','errorInvalidId':'ID de note invalide','errorTooLong':'Fichier trop long (max. 20000 caractères)',
+  'errorNoLangs':'Sélectionnez d abord des langages','errorUnknownJob':'Tâche d installation inconnue'
+ },
+ zh:{
+  'selectFolder':'选择文件夹','marketplaceSearch':'在 Marketplace 中搜索扩展','refreshList':'刷新列表','reloadCatalog':'重新加载目录',
+  'sortBy':'排序方式','mostInstalled':'安装最多','highestRated':'评分最高','nameOption':'名称',
+  'showCosmetic':'仅显示装饰类','langDesc':'工具链目录 · 通过 winget 批量安装 (Windows)',
+  'totalLbl':'总计：','selectedLbl':'已选择：','extEmptyBody':'选择一个扩展以查看详情。',
+  'extDetails':'详情','extTweaks':'NeoMind 调整','installs':'安装量','rating':'评分','reviews':'评价',
+  'noDescAvailable':'暂无描述。','installingLabel':'安装中','installingPrefix':'安装中：',
+  'modEnabled':'已启用调整','modDisabled':'已禁用调整','deleteNote':'删除笔记',
+  'newNoteShortcut':'新建笔记 (Ctrl+N)','newFileShortcut':'新建文件 (Ctrl+N)','catCatalog':'目录',
+  'referenceOnly':'仅供参考 — NeoMind 不会安装任何内容。','shown':'已显示','top100':'前 100',
+  'cosmetic':'装饰','unassigned':'NeoMind','errorInvalidName':'文件名无效',
+  'errorCore':'内核错误','errorInvalidId':'笔记 ID 无效','errorTooLong':'文件过长（最多 20000 字符）',
+  'errorNoLangs':'请先选择语言','errorUnknownJob':'未知安装任务'
+ },
+ ja:{
+  'selectFolder':'フォルダーを選択','marketplaceSearch':'Marketplace で拡張機能を検索','refreshList':'一覧を更新','reloadCatalog':'カタログを再読み込み',
+  'sortBy':'並べ替え','mostInstalled':'インストール数','highestRated':'評価が高い','nameOption':'名前',
+  'showCosmetic':'装飾のみ表示','langDesc':'ツールチェーン一覧 · winget で一括インストール (Windows)',
+  'totalLbl':'合計：','selectedLbl':'選択中：','extEmptyBody':'拡張機能を選択すると詳細が表示されます。',
+  'extDetails':'詳細','extTweaks':'NeoMind 調整','installs':'インストール数','rating':'評価','reviews':'レビュー',
+  'noDescAvailable':'説明はありません。','installingLabel':'インストール中','installingPrefix':'インストール中：',
+  'modEnabled':'調整を有効化','modDisabled':'調整を無効化','deleteNote':'ノートを削除',
+  'newNoteShortcut':'新しいノート (Ctrl+N)','newFileShortcut':'新しいファイル (Ctrl+N)','catCatalog':'カタログ',
+  'referenceOnly':'参考用カタログ — NeoMind には何もインストールされません。','shown':'件表示','top100':'トップ100',
+  'cosmetic':'装飾','unassigned':'NeoMind','errorInvalidName':'ファイル名が無効です',
+  'errorCore':'コアエラー','errorInvalidId':'ノート ID が無効です','errorTooLong':'ファイルが長すぎます（最大 20000 文字）',
+  'errorNoLangs':'先に言語を選択してください','errorUnknownJob':'不明なインストール作業'
+ }
+};
+Object.keys(I18N_EXTRA).forEach(loc=>Object.assign(I18N[loc],I18N_EXTRA[loc]));
+I18N.en.clearSelection='Clear selection'; I18N.ru.clearSelection='Сбросить выделение';
+I18N.uk.clearSelection='Скинути вибір'; I18N.es.clearSelection='Borrar selección';
+I18N.de.clearSelection='Auswahl leeren'; I18N.fr.clearSelection='Effacer la sélection';
+I18N.zh.clearSelection='清除选择'; I18N.ja.clearSelection='選択をクリア';
+I18N.en.selectAll='Select all'; I18N.ru.selectAll='Выбрать все'; I18N.uk.selectAll='Вибрати все';
+I18N.es.selectAll='Seleccionar todo'; I18N.de.selectAll='Alle auswählen'; I18N.fr.selectAll='Tout sélectionner';
+I18N.zh.selectAll='全选'; I18N.ja.selectAll='すべて選択';
+I18N.en.folderPlaceholder='NeoMind / Project'; I18N.ru.folderPlaceholder='NeoMind / Проект';
+I18N.uk.folderPlaceholder='NeoMind / Проєкт'; I18N.es.folderPlaceholder='NeoMind / Proyecto';
+I18N.de.folderPlaceholder='NeoMind / Projekt'; I18N.fr.folderPlaceholder='NeoMind / Projet';
+I18N.zh.folderPlaceholder='NeoMind / 项目'; I18N.ja.folderPlaceholder='NeoMind / プロジェクト';
+I18N.en.projectPlaceholder='My project'; I18N.ru.projectPlaceholder='Мой проект';
+I18N.uk.projectPlaceholder='Мій проєкт'; I18N.es.projectPlaceholder='Mi proyecto';
+I18N.de.projectPlaceholder='Mein Projekt'; I18N.fr.projectPlaceholder='Mon projet';
+I18N.zh.projectPlaceholder='我的项目'; I18N.ja.projectPlaceholder='マイプロジェクト';
+I18N.en.errorPickerWindows='Folder picker is available on Windows only';
+I18N.ru.errorPickerWindows='Выбор папки доступен только в Windows';
+I18N.uk.errorPickerWindows='Вибір папки доступний лише у Windows';
+I18N.es.errorPickerWindows='El selector de carpetas solo está disponible en Windows';
+I18N.de.errorPickerWindows='Die Ordnerauswahl ist nur unter Windows verfügbar';
+I18N.fr.errorPickerWindows='Le sélecteur de dossiers est disponible uniquement sous Windows';
+I18N.zh.errorPickerWindows='文件夹选择器仅在 Windows 上可用';
+I18N.ja.errorPickerWindows='フォルダー選択は Windows でのみ利用できます';
+let uiLocale=localStorage.getItem('nm_locale')||'en';
+if(!SUPPORTED_LOCALES.includes(uiLocale))uiLocale='en';
+function t(key,vars){
+  let s=(I18N[uiLocale]&&I18N[uiLocale][key])||I18N.en[key]||key;
+  if(vars)for(const k of Object.keys(vars))s=s.split('{'+k+'}').join(String(vars[k]));
+  return s;
+}
+const I18N_NODES={
+ actFiles:['title','act.explorer'],actFolders:['title','act.folders'],actSearch:['title','act.search'],
+ actLangs:['title','act.languages'],actMods:['title','act.mods'],actFolder:['title','act.openData'],
+ newBtn:['title','newFileShortcut'],newTop:['title','newFileShortcut'],folderNew:['title','newProject'],
+ folderFileNew:['title','newFile'],sortBtn:['title','sort'],tabClose:['title','close'],
+ search:['placeholder','filter'],folderFilter:['placeholder','filterFolders'],
+ langSearch:['placeholder','filter'],modsSearch:['placeholder','marketplaceSearch'],
+ modsSort:['title','sortBy'],modsScope:['text','cosmetic'],
+ modsSortInstalls:['text','mostInstalled'],modsSortRating:['text','highestRated'],modsSortName:['text','nameOption'],
+ fileDlgTitle:['text','newFile'],fileDlgName:['placeholder','main.rs'],fileDlgNameLbl:['text','fileName'],
+ fileDlgFolder:['placeholder','folderPlaceholder'],fileDlgFolderLbl:['text','folder'],
+ fileDlgBrowse:['text','browse'],fileDlgNo:['text','cancel'],fileDlgYes:['text','create'],fileDlgHint:['text','fileHint'],
+ projectDlgTitle:['text','newProject'],projectDlgNameLbl:['text','projectName'],
+ projectDlgName:['placeholder','projectPlaceholder'],
+ projectDlgNo:['text','cancel'],projectDlgYes:['text','create'],confNo:['text','cancel'],
+ palHead:['text','quickOpen'],palInput:['placeholder','noteTitle'],
+ exitFocus:['text','exitFocus'],uiLang:['title','uiLanguage'],langMode:['title','syntaxLanguage'],
+ langRefresh:['text','refresh'],langRefreshSide:['title','refreshList'],modsRefreshSide:['title','reloadCatalog'],
+ langSelAll:['text','selectAll'],langSelNone:['text','clearSelection'],
+ langModeAuto:['text','autoDetect'],langModePlain:['text','plainText'],
+ langInstallAll:['text','installAll'],langInstallSel:['text','installSelected'],
+ langHead:['text','act.languages'],langDesc:['text','langDesc'],
+ lsTotalLbl:['text','totalLbl'],lsInstalledLbl:['text','installedLbl'],lsSelectedLbl:['text','selectedLbl'],
+ langTabName:['text','act.languages'],modsTabName:['text','act.mods'],
+ exTabDetails:['text','extDetails'],exTabTweaks:['text','extTweaks'],
+ wKeyNew:['text','welcomeNew'],wKeyOpen:['text','welcomeOpen'],wKeyFilter:['text','welcomeFilter'],wKeySave:['text','welcomeSave'],
+ welcomeNew:['text','newFile']
+};
+function applyI18n(){
+  document.documentElement.lang=uiLocale;
+  Object.keys(I18N_NODES).forEach(id=>{
+    const el=$(id); if(!el)return;
+    const [attr,key]=I18N_NODES[id];
+    const val=t(key);
+    if(attr==='text')el.textContent=val;else el[attr]=val;
+  });
+  document.querySelectorAll('[data-i18n]').forEach(el=>el.textContent=t(el.dataset.i18n));
+  document.querySelectorAll('[data-i18n-title]').forEach(el=>el.title=t(el.dataset.i18nTitle));
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>el.placeholder=t(el.dataset.i18nPlaceholder));
+  document.querySelectorAll('.side-title > span').forEach((el,i)=>{
+    const keys=['explorer','folders','languages','extensions'];
+    if(keys[i])el.textContent=t(keys[i]);
+  });
+  $('folderAddRoot').textContent='+ '+t('newProject');
+  $('modsScope').title=t('showCosmetic');
+  $('coreVer').textContent=coreStatusOk?(t('rustCore')+' '+coreVersion):t('coreUnavailable');
+  if($('exEmptyText'))$('exEmptyText').innerHTML='<b>'+esc(t('extensions'))+'</b>'+esc(t('extEmptyBody'))+
+    '<br>'+esc(t('referenceOnly'));
+  updateCount(); crumbForView(currentView);
+  render(); renderFolderTree(); renderLangs(); renderModsList(); renderDetail();
+  document.title=t('app.notes');
+  $('uiLang').value=uiLocale;
+  if(window.nm_set_title)nm_set_title(t('app.notes'));
+}
 
 const ICON_CHECK='<svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>';
 
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function fmt(ms){try{return new Date(ms).toLocaleString('en-US',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'});}catch(e){return '';}}
-function titleOf(t){const l=String(t||'').trim().split('\n')[0]||'Untitled';return l.length>58?l.slice(0,58)+'…':l;}
+function readStore(key,fallback){
+  try{
+    const raw=localStorage.getItem(key); if(!raw)return fallback;
+    const v=JSON.parse(raw); return v&&typeof v==='object'?v:fallback;
+  }catch(e){return fallback;}
+}
+function writeStore(key,value){
+  try{localStorage.setItem(key,JSON.stringify(value));}catch(e){}
+}
+function saveFolders(){writeStore('nm_folders',folders);}
+function saveFolderOpen(){writeStore('nm_folder_open',folderOpen);}
+function fmt(ms){
+  try{return new Date(ms).toLocaleString(uiLocale,{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'});}
+  catch(e){return '';}
+}
+function noteName(n){
+  if(n&&typeof n==='object'&&String(n.name||'').trim())return String(n.name).trim();
+  const line=String((n&&typeof n==='object'?n.text:n)||'').trim().split('\n')[0];
+  return line||t('untitled');
+}
+function noteFolder(n){return n&&typeof n==='object'?String(n.folder||''):'';}
+function titleOf(n){
+  const l=noteName(n);
+  return l.length>58?l.slice(0,58)+'…':l;
+}
+function folderLabel(path){
+  if(!path)return t('unassigned');
+  const parts=String(path).split(/[\\/]+/).filter(Boolean);
+  return parts.length?parts[parts.length-1]:String(path);
+}
 function keyOf(n){return n.id||n.ts;}
 function timeOf(n){return n.created||(keyOf(n)>1e12?keyOf(n):keyOf(n)*1000);}
 function mark(s,q){
@@ -586,7 +1200,18 @@ function message(t){
   $('msg').textContent=t; clearTimeout(msgTimer);
   msgTimer=setTimeout(()=>{$('msg').textContent='';},3200);
 }
-function fail(e){message('Error: '+(e&&e.message?e.message:e));}
+const ERROR_KEYS={
+ 'invalid file name':'errorInvalidName','invalid note id':'errorInvalidId',
+ 'note is empty':'errorInvalidName','file is too long':'errorTooLong',
+ 'no languages selected':'errorNoLangs','unknown install job':'errorUnknownJob',
+ 'neomind-core not found':'errorCore','core returned no answer':'errorCore','core failed':'errorCore',
+ 'folder picker is available on Windows only':'errorPickerWindows'
+};
+function fail(e){
+  const raw=e&&e.message?e.message:String(e||t('error'));
+  const key=Object.keys(ERROR_KEYS).find(prefix=>raw.indexOf(prefix)===0);
+  message(key?t(ERROR_KEYS[key]):t('errorGeneric',{detail:raw}));
+}
 function lineNumbers(){
   const n=textEl.value.split('\n').length;
   let s='';for(let i=1;i<=n;i++)s+=i+'\n';
@@ -686,10 +1311,21 @@ function activeLang(){
   if(!detectedLangs[key])detectedLangs[key]=detectLang(textEl.value);
   return detectedLangs[key];
 }
+const TOKEN_SETS={};
+function setsFor(langId){
+  if(!TOKEN_SETS[langId]){
+    const cfg=LANGS[langId]||LANGS.plaintext;
+    TOKEN_SETS[langId]={
+      kws:new Set(cfg.keywords||[]),ctr:new Set(cfg.control||[]),
+      tys:new Set(cfg.types||[]),bis:new Set(cfg.builtins||[])
+    };
+  }
+  return TOKEN_SETS[langId];
+}
 function tokenize(code,langId){
   const cfg=LANGS[langId]||LANGS.plaintext;
-  const kws=new Set(cfg.keywords||[]),ctr=new Set(cfg.control||[]),
-        tys=new Set(cfg.types||[]),bis=new Set(cfg.builtins||[]);
+  const sets=setsFor(langId);
+  const kws=sets.kws,ctr=sets.ctr,tys=sets.tys,bis=sets.bis;
   const out=[];let i=0;const n=code.length;
   const put=(cls,s)=>out.push('<span class="tok-'+cls+'">'+esc(s)+'</span>');
   while(i<n){
@@ -754,21 +1390,64 @@ function refreshHighlight(){
   pre.classList.remove('hidden');
   pre.innerHTML=tokenize(textEl.value,activeLang())+'\n';
   pre.scrollTop=textEl.scrollTop;pre.scrollLeft=textEl.scrollLeft;
+  drawMinimap();
+}
+function scheduleHighlight(){
+  if(highlightTimer)clearTimeout(highlightTimer);
+  highlightTimer=setTimeout(()=>{highlightTimer=null;refreshHighlight();},160);
+}
+function drawMinimap(){
+  const mini=$('minimap'), canvas=$('miniCanvas');
+  if(mini.classList.contains('hidden')||document.body.classList.contains('mod-no-minimap'))return;
+  const dpr=window.devicePixelRatio||1;
+  const w=42,h=Math.max(1,mini.clientHeight);
+  if(canvas.width!==Math.floor(w*dpr)||canvas.height!==Math.floor(h*dpr)){
+    canvas.width=Math.floor(w*dpr);canvas.height=Math.floor(h*dpr);
+  }
+  const ctx=canvas.getContext('2d');
+  if(!ctx)return;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle='#1e1e1e';ctx.fillRect(0,0,w,h);
+  const lines=textEl.value.split('\n');
+  const row=2, shown=Math.min(lines.length,Math.floor(h/row));
+  for(let i=0;i<shown;i++){
+    const text=lines[i]||' ';
+    let len=0;while(len<text.length&&/\s/.test(text[len]))len++;
+    const width=Math.max(3,Math.min(w-4,text.length*2.2));
+    ctx.fillStyle=len?'#d4d4d4':'#7a7a7a';
+    ctx.fillRect(2,i*row,width,1);
+  }
+  const total=textEl.scrollHeight||1;
+  const view=textEl.clientHeight||1;
+  const vh=Math.max(4,Math.min(h,view/total*h));
+  const vy=(textEl.scrollTop/total)*h;
+  ctx.fillStyle='rgba(255,255,255,.18)';ctx.fillRect(0,vy,w,vh);
+}
+let miniDrag=false;
+function miniScroll(e){
+  const r=$('minimap').getBoundingClientRect();
+  const frac=Math.max(0,Math.min(1,(e.clientY-r.top)/r.height));
+  textEl.scrollTop=frac*(textEl.scrollHeight-textEl.clientHeight);
+  textEl.selectionStart=textEl.selectionEnd=Math.round(frac*textEl.value.length);
+  updatePos();
 }
 function updatePos(){
   const p=textEl.selectionStart||0;
   const before=textEl.value.slice(0,p);
   const lines=before.split('\n');
-  $('pos').textContent='Ln '+lines.length+', Col '+(lines[lines.length-1].length+1);
+  $('pos').textContent=t('ln')+' '+lines.length+', '+t('col')+' '+(lines[lines.length-1].length+1);
 }
-function updateCount(){$('count').textContent=notes.length+(notes.length===1?' note':' notes');}
+function updateCount(){$('count').textContent=notes.length+' '+t(notes.length===1?'note':'notes');}
 
 /* ---------- languages view ---------- */
 function langVisible(){
   const q=($('langSearch').value||'').trim().toLowerCase();
   return langs.filter(l=>!q||(l.name+' '+l.desc+' '+l.winget).toLowerCase().includes(q));
 }
-function langStatus(l){return l.installed?'installed':'not installed';}
+const LANG_GROUPS=['general','web','games','cybersecurity','data','editor'];
+function groupKey(l){return LANG_GROUPS.indexOf(l&&l.group)>=0?l.group:'general';}
+function langStatus(l){return t(l.installed?'installed':'notInstalled');}
 function langRowHTML(l){
   const on=langSelected.has(l.id)?' checked':'';
   return '<label class="langrow'+(on?' checked':'')+'" data-lang="'+esc(l.id)+'">'+
@@ -783,8 +1462,18 @@ function langCardHTML(l){
     '<label class="lang-card-top"><input type="checkbox" data-lang-check="'+esc(l.id)+'"'+on+'>'+
     '<span class="lname">'+esc(l.name)+'</span><span class="lflag">'+langStatus(l)+'</span></label>'+
     '<div class="ldesc">'+esc(l.desc)+'</div>'+
-    '<div class="lmeta"><span>version '+esc(l.version)+'</span><span>'+esc(l.size)+'</span><code>'+esc(l.winget)+'</code></div>'+
+    '<div class="lmeta"><span>'+esc(t('version'))+' '+esc(l.version)+'</span><span>'+esc(l.size)+'</span><code>'+esc(l.winget)+'</code></div>'+
     '</div>';
+}
+function groupedLangs(items,rowHTML){
+  let html='';
+  LANG_GROUPS.forEach(g=>{
+    const part=items.filter(l=>groupKey(l)===g)
+      .sort((a,b)=>(a.order||0)-(b.order||0)||String(a.name).localeCompare(String(b.name)));
+    if(!part.length)return;
+    html+='<div class="lang-group">'+esc(t('group.'+g))+'</div>'+part.map(rowHTML).join('');
+  });
+  return html;
 }
 function bindLangCheck(cb){
   cb.onchange=()=>{
@@ -795,9 +1484,9 @@ function bindLangCheck(cb){
 }
 function renderLangs(){
   const shown=langVisible();
-  const empty='<div class="lang-empty">No matches</div>';
-  $('langList').innerHTML=shown.length?shown.map(langRowHTML).join(''):empty;
-  $('langGrid').innerHTML=shown.length?shown.map(langCardHTML).join(''):empty;
+  const empty='<div class="lang-empty">'+esc(t('noMatches'))+'</div>';
+  $('langList').innerHTML=shown.length?groupedLangs(shown,langRowHTML):empty;
+  $('langGrid').innerHTML=shown.length?groupedLangs(shown,langCardHTML):empty;
   $('langList').querySelectorAll('input[data-lang-check]').forEach(bindLangCheck);
   $('langGrid').querySelectorAll('input[data-lang-check]').forEach(bindLangCheck);
   $('lsTotal').textContent=langs.length;
@@ -809,6 +1498,7 @@ function renderLangs(){
 async function loadLanguages(){
   try{
     langs=JSON.parse(await nm_languages());
+    langsLoaded=true;
     renderLangs();
     if(window.nm_report) nm_report('langs '+langs.length);
   }catch(e){fail(e);}
@@ -820,10 +1510,10 @@ function setAllLangs(on){
 function renderProgress(j){
   const pct=j.total?Math.round((j.done.length+j.failed.length)/j.total*100):0;
   $('langProgress').classList.remove('hidden');
-  $('lpTitle').textContent=j.running?'Installing...':'Done';
+  $('lpTitle').textContent=j.running?t('installingLabel'):t('done');
   $('lpCount').textContent=(j.done.length+j.failed.length)+' / '+j.total;
   $('lpFill').style.width=pct+'%';
-  $('lpCurrent').textContent=j.running&&j.current?('Installing: '+j.current):'';
+  $('lpCurrent').textContent=j.running&&j.current?(t('installingPrefix')+' '+j.current):'';
   $('lpLog').innerHTML=j.messages.map(m=>esc(m)).join('<br>');
   $('lpLog').scrollTop=$('lpLog').scrollHeight;
 }
@@ -837,18 +1527,18 @@ async function pollProgress(){
       langTimer=setTimeout(pollProgress,900);
     }else{
       langJob=null; langTimer=null;
-      message(j.failed.length?'Install finished with errors':'Install finished');
+      message(t(j.failed.length?'installErrors':'installFinished'));
       await loadLanguages();
     }
   }catch(e){fail(e);}finally{langBusy=false;}
 }
 async function installLangs(ids){
-  if(langJob){message('Install is already running');return;}
-  if(!ids.length){message('Select languages first');return;}
+  if(langJob){message(t('installRunning'));return;}
+  if(!ids.length){message(t('selectFirst'));return;}
   try{
     langJob=await nm_install_languages(JSON.stringify(ids));
-    renderProgress({running:true,current:'',total:ids.length,done:[],failed:[],messages:['Task created']});
-    message('Install started');
+    renderProgress({running:true,current:'',total:ids.length,done:[],failed:[],messages:[t('taskCreated')]});
+    message(t('installStarted'));
     renderLangs();
     langTimer=setTimeout(pollProgress,400);
   }catch(e){fail(e);}
@@ -856,6 +1546,7 @@ async function installLangs(ids){
 /* ---------- mods view: VS Code-style extension catalog ---------- */
 let topMods=[], curatedMods=[], shownMods=[], selectedMod=null;
 let exTab='details', modsScope='top', searchTimer=null;
+let langsLoaded=false, modsLoaded=false;
 
 function normalizeMod(m){
   return {
@@ -890,27 +1581,26 @@ function toggleTweak(id){
   else appliedMods.add(id);
   applyModClasses();
   renderDetail();
-  message('Mod '+(appliedMods.has(id)?'enabled':'disabled'));
+  message(t(appliedMods.has(id)?'modEnabled':'modDisabled'));
 }
 function tweakGridHTML(){
-  return '<h3>Local UI tweaks</h3>'+
-    '<p>These only restyle the NeoMind workbench. They are stored in this browser and add no external code.</p>'+
-    '<div class="ex-tweaks">'+TWEAKS.map(t=>
-      '<div class="tweak'+(appliedMods.has(t.id)?' on':'')+'" data-tweak="'+t.id+'">'+
-      '<span class="tw-body"><span class="tw-name">'+esc(t.name)+'</span>'+
-      '<span class="tw-desc">'+esc(t.desc)+'</span></span><span class="toggle"></span></div>').join('')+'</div>';
+  return '<h3>'+esc(t('tweaks'))+'</h3><p>'+esc(t('tweaksDesc'))+'</p>'+
+    '<div class="ex-tweaks">'+TWEAKS.map(tw=>
+      '<div class="tweak'+(appliedMods.has(tw.id)?' on':'')+'" data-tweak="'+tw.id+'">'+
+      '<span class="tw-body"><span class="tw-name">'+esc(t(tw.nameKey))+'</span>'+
+      '<span class="tw-desc">'+esc(t(tw.descKey))+'</span></span><span class="toggle"></span></div>').join('')+'</div>';
 }
 function wireTweaks(){
   $('exBody').querySelectorAll('.tweak').forEach(el=>{el.onclick=()=>toggleTweak(el.dataset.tweak);});
 }
 function exCardHTML(m){
-  const left=m.installs?fmtNum(m.installs)+' installs':(m.safe?'COSMETIC':'CATALOG');
+  const left=m.installs?fmtNum(m.installs)+' '+t('installs'):(m.safe?t('cosmetic'):t('catCatalog'));
   const right=m.rating?'★ '+m.rating.toFixed(1):(m.kind||'');
   return '<div class="ex-card'+(selectedMod&&selectedMod.id===m.id?' on':'')+'" data-id="'+esc(m.id)+'">'+
     exImageHTML(m.icon,'ex-ci',m.name)+
     '<div class="ex-cbody"><div class="ex-cname">'+esc(m.name)+'</div>'+
     '<div class="ex-cpub">'+esc(m.publisher)+'</div>'+
-    '<div class="ex-cdesc">'+esc(m.description||'No description')+'</div>'+
+    '<div class="ex-cdesc">'+esc(m.description||t('noDescription'))+'</div>'+
     '<div class="ex-cfoot"><span>'+esc(left)+'</span><span>'+esc(right)+'</span></div></div></div>';
 }
 function renderModsList(){
@@ -921,7 +1611,7 @@ function renderModsList(){
     :sort==='rating'?(b.rating-a.rating)||(b.ratingCount-a.ratingCount)
     :b.installs-a.installs);
   if(!list.length && !searchTimer){
-    $('modsList').innerHTML='<div class="ex-loading">'+(q?'No matches':'No extensions')+'</div>';
+    $('modsList').innerHTML='<div class="ex-loading">'+esc(t(q?'noMatches':'noExtensions'))+'</div>';
   }else{
     $('modsList').innerHTML=list.map(exCardHTML).join('');
     $('modsList').querySelectorAll('.ex-card').forEach(el=>{
@@ -931,7 +1621,7 @@ function renderModsList(){
       };
     });
   }
-  $('modsCount').textContent=(modsScope==='top'?'Top 100':'Cosmetic')+' · '+list.length+' shown';
+  $('modsCount').textContent=(modsScope==='top'?t('top100'):t('cosmetic'))+' · '+list.length+' '+t('shown');
 }
 function selectMod(m){
   selectedMod=m;
@@ -954,17 +1644,17 @@ function renderDetail(){
   $('exIconFb').textContent=esc(String(m.name||'?')[0].toUpperCase());
   $('exName').textContent=m.name;
   $('exPub').textContent=m.publisher;
-  const pills=['<span class="ex-pill">'+(modsScope==='top'?'MARKETPLACE':'COSMETIC')+'</span>'];
-  if(m.safe)pills.push('<span class="ex-pill">SAFE</span>');
-  if(m.executesCode)pills.push('<span class="ex-pill quiet">EXECUTES CODE</span>');
+  const pills=['<span class="ex-pill">'+esc(t(modsScope==='top'?'marketplace':'cosmetic'))+'</span>'];
+  if(m.safe)pills.push('<span class="ex-pill">'+esc(t('safe'))+'</span>');
+  if(m.executesCode)pills.push('<span class="ex-pill quiet">'+esc(t('executesCode'))+'</span>');
   if(m.kind)pills.push('<span class="ex-pill quiet">'+esc(m.kind.toUpperCase())+'</span>');
   $('exPills').innerHTML=pills.join('');
   $('exStats').innerHTML=
-    '<span><b>'+fmtNum(m.installs)+'</b> installs</span>'+
-    '<span><b>'+(m.rating?m.rating.toFixed(1):'—')+'</b> rating</span>'+
-    '<span><b>'+fmtNum(m.ratingCount)+'</b> reviews</span>';
-  const actions=['<button class="ex-btn" data-open="'+esc(m.marketplace)+'">Open in Marketplace</button>'];
-  if(m.source)actions.push('<button class="ex-btn" data-open="'+esc(m.source)+'">View Source</button>');
+    '<span><b>'+fmtNum(m.installs)+'</b> '+esc(t('installs'))+'</span>'+
+    '<span><b>'+(m.rating?m.rating.toFixed(1):'—')+'</b> '+esc(t('rating'))+'</span>'+
+    '<span><b>'+fmtNum(m.ratingCount)+'</b> '+esc(t('reviews'))+'</span>';
+  const actions=['<button class="ex-btn" data-open="'+esc(m.marketplace)+'">'+esc(t('openMarketplace'))+'</button>'];
+  if(m.source)actions.push('<button class="ex-btn" data-open="'+esc(m.source)+'">'+esc(t('viewSource'))+'</button>');
   $('exActions').innerHTML=actions.join('');
   $('exActions').querySelectorAll('button[data-open]').forEach(b=>{
     b.onclick=()=>openModLink(b.dataset.open);
@@ -975,21 +1665,22 @@ function renderDetail(){
     wireTweaks();
     return;
   }
-  let html='<h3>About</h3><p>'+esc(m.description||'No description available.')+'</p>';
-  html+='<h3>Details</h3><div class="ex-kv">'+
-    '<span>Identifier</span><span>'+esc(m.id)+'</span>'+
-    '<span>Publisher</span><span>'+esc(m.publisher)+'</span>'+
-    (m.kind?'<span>Kind</span><span>'+esc(m.kind)+'</span>':'')+
-    (m.license?'<span>License</span><span>'+esc(m.license)+'</span>':'')+
-    (m.source?'<span>Source</span><span>'+esc(m.source)+'</span>':'')+
+  let html='<h3>'+esc(t('about'))+'</h3><p>'+esc(m.description||t('noDescAvailable'))+'</p>';
+  html+='<h3>'+esc(t('details'))+'</h3><div class="ex-kv">'+
+    '<span>'+esc(t('identifier'))+'</span><span>'+esc(m.id)+'</span>'+
+    '<span>'+esc(t('publisher'))+'</span><span>'+esc(m.publisher)+'</span>'+
+    (m.kind?'<span>'+esc(t('kind'))+'</span><span>'+esc(m.kind)+'</span>':'')+
+    (m.license?'<span>'+esc(t('license'))+'</span><span>'+esc(m.license)+'</span>':'')+
+    (m.source?'<span>'+esc(t('source'))+'</span><span>'+esc(m.source)+'</span>':'')+
     '</div>';
-  html+='<div class="ex-note">Reference catalog only. NeoMind never downloads, installs or executes extension code — these are links with author icons and source repositories.</div>';
-  if(m.executesCode)html+='<div class="ex-note">This extension executes code in VS Code. It is shown here for reference; nothing is installed in NeoMind.</div>';
+  html+='<div class="ex-note">'+esc(t('referenceNote'))+'</div>';
+  if(m.executesCode)html+='<div class="ex-note">'+esc(t('codeNote'))+'</div>';
   $('exBody').innerHTML=html;
 }
 async function loadTopMods(){
   try{
     topMods=JSON.parse(await nm_mods_top()).map(normalizeMod);
+    modsLoaded=true;
     if(modsScope==='top'){shownMods=topMods;renderModsList();}
     if(window.nm_report)nm_report('top '+topMods.length);
   }catch(e){fail(e);}
@@ -997,6 +1688,7 @@ async function loadTopMods(){
 async function loadCuratedMods(){
   try{
     curatedMods=JSON.parse(await nm_mods()).map(normalizeMod);
+    modsLoaded=true;
     if(modsScope==='cosmetic'){shownMods=curatedMods;renderModsList();}
     if(window.nm_report)nm_report('mods '+curatedMods.length);
   }catch(e){fail(e);}
@@ -1022,7 +1714,7 @@ async function searchMarketplace(){
   if(modsScope!=='top'){renderModsList();return;}
   searchTimer=setTimeout(async()=>{
     searchTimer=null;
-    $('modsList').innerHTML='<div class="ex-loading">Searching Marketplace...</div>';
+    $('modsList').innerHTML='<div class="ex-loading">'+esc(t('searching'))+'</div>';
     try{
       shownMods=JSON.parse(await nm_mods_search(q)).map(normalizeMod);
       if(selectedMod&&!shownMods.some(m=>m.id===selectedMod.id))selectedMod=null;
@@ -1030,7 +1722,7 @@ async function searchMarketplace(){
       renderDetail();
       if(window.nm_report)nm_report('search '+shownMods.length);
     }catch(e){
-      $('modsList').innerHTML='<div class="ex-loading">Search failed: '+esc(e.message||e)+'</div>';
+      $('modsList').innerHTML='<div class="ex-loading">'+esc(t('searchFailed'))+' '+esc(e.message||e)+'</div>';
     }
   },350);
 }
@@ -1039,33 +1731,52 @@ async function openModLink(url){
   catch(e){ fail(e); }
 }
 
+function crumbForView(v){
+  const files=v==='files'||v==='folders';
+  const folderView=v==='folders';
+  $('crumb').textContent=files
+    ?(selected!==null?titleOf(notes.find(n=>keyOf(n)===selected)):'')
+    :t(v==='langs'?'languages':'extensions');
+  document.title=files?t('app.notes'):t(v==='langs'?'act.languages':'act.mods');
+  if(folderView&&!selected)$('crumb').textContent=t('folders');
+}
 function switchView(v){
   if(v===currentView)return;
-  if(currentView==='files')flushSave(false);
+  if(currentView==='files'||currentView==='folders')flushSave(false);
+  const prev=currentView;
   currentView=v;
-  const files=v==='files', langsView=v==='langs', modsView=v==='mods';
+  const files=v==='files', folderView=v==='folders', langsView=v==='langs', modsView=v==='mods';
+  const editorView=files||folderView;
   $('sideFiles').classList.toggle('hidden',!files);
+  $('sideFolders').classList.toggle('hidden',!folderView);
   $('sideLangs').classList.toggle('hidden',!langsView);
   $('sideMods').classList.toggle('hidden',!modsView);
-  $('editorwrap').classList.toggle('hidden',!files);
+  $('editorwrap').classList.toggle('hidden',!editorView);
   $('langView').classList.toggle('hidden',!langsView);
   $('modsView').classList.toggle('hidden',!modsView);
-  $('tab').classList.toggle('hidden',!files||selected===null);
+  $('tab').classList.toggle('hidden',!editorView||selected===null);
   $('langTab').classList.toggle('hidden',!langsView);
   $('modsTab').classList.toggle('hidden',!modsView);
   $('actFiles').classList.toggle('on',files);
+  $('actFolders').classList.toggle('on',folderView);
   $('actLangs').classList.toggle('on',langsView);
   $('actMods').classList.toggle('on',modsView);
-  $('crumb').textContent=files
-    ?(selected!==null?titleOf(notes.find(n=>keyOf(n)===selected)?.text||''):'')
-    :(langsView?'Languages':'Mods');
-  document.title=files?'NeoMind':(langsView?'NeoMind — Languages':'NeoMind — Mods');
+  if(prev==='langs'){$('langList').replaceChildren();$('langGrid').replaceChildren();}
+  if(prev==='mods'){
+    $('modsList').replaceChildren();$('exBody').replaceChildren();
+    $('exPills').replaceChildren();$('exStats').replaceChildren();$('exActions').replaceChildren();
+  }
+  crumbForView(v);
   if(window.nm_report) nm_report('view '+v);
-  if(langsView)loadLanguages();
-  if(modsView){loadTopMods();loadCuratedMods();}
+  if(langsView){if(!langsLoaded)loadLanguages();else renderLangs();}
+  if(modsView){
+    if(!modsLoaded){loadTopMods();loadCuratedMods();}
+    else{renderModsList();renderDetail();}
+  }
+  if(folderView)renderFolderTree();
 }
 
-window.onerror=function(m){message('JS: '+m);};
+window.onerror=function(m){message(t('errorGeneric',{detail:m}));};
 async function load(){
   try{
     notes=JSON.parse(await nm_list());
@@ -1082,45 +1793,188 @@ function pruneLangOverrides(){
 async function loadStatus(){
   try{
     const r=JSON.parse(await nm_status());
-    $('coreVer').textContent='Rust core '+r.version;
+    coreVersion=String(r.version||''); coreStatusOk=true;
+    $('coreVer').textContent=t('rustCore')+' '+coreVersion;
     $('coreDot').style.background='#d4d4d4';
-  }catch(e){$('coreVer').textContent='core unavailable';}
+  }catch(e){
+    coreVersion=''; coreStatusOk=false;
+    $('coreVer').textContent=t('coreUnavailable');
+  }
 }
 function sorted(){
   const a=notes.slice();
   if(sortMode==='date-desc')a.sort((x,y)=>timeOf(y)-timeOf(x));
   if(sortMode==='date-asc')a.sort((x,y)=>timeOf(x)-timeOf(y));
-  if(sortMode==='title')a.sort((x,y)=>titleOf(x.text).localeCompare(titleOf(y.text),'ru'));
+  if(sortMode==='title')a.sort((x,y)=>titleOf(x).localeCompare(titleOf(y),uiLocale));
   return a;
 }
 function render(){
   const q=searchEl.value.trim().toLowerCase();
-  const shown=sorted().filter(n=>!q||n.text.toLowerCase().includes(q));
+  const shown=sorted().filter(n=>!q||(noteName(n)+' '+n.text).toLowerCase().includes(q));
   if(!shown.length){
-    listEl.innerHTML='<div class="side-empty">'+(q?'No matches':'Folder is empty')+'</div>';
+    listEl.innerHTML='<div class="side-empty">'+esc(t(q?'noMatches':'folderEmpty'))+'</div>';
     return;
   }
   listEl.innerHTML=shown.map(n=>{
     const id=keyOf(n), on=id===selected?' on':'';
     const text=String(n.text||'').replace(/\s+/g,' ').trim();
     return '<div class="row'+on+'" data-id="'+id+'" tabindex="-1">'+
-      '<div class="t">'+mark(titleOf(n.text),q)+'</div>'+
+      '<div class="t">'+mark(noteName(n),q)+'</div>'+
       '<div class="s">'+mark(text,q)+'</div></div>';
   }).join('');
   listEl.querySelectorAll('.row').forEach(el=>{
     el.onclick=()=>select(Number(el.dataset.id));
   });
 }
+function markSelected(){
+  listEl.querySelectorAll('.row').forEach(el=>el.classList.toggle('on',Number(el.dataset.id)===selected));
+  $('folderTree').querySelectorAll('.tree-row.file').forEach(el=>el.classList.toggle('on',Number(el.dataset.id)===selected));
+}
+
+/* ---------- folders / projects tree ---------- */
+function isAbsFolder(folder){
+  return /^[A-Za-z]:[\\/]/.test(folder)||folder.indexOf('/')===0||folder.indexOf('\\\\')===0;
+}
+function folderNodes(){
+  const root={id:'root',label:t('unassigned'),folder:'',files:[],children:[]};
+  const map=new Map();
+  if(!Array.isArray(folders))folders=[];
+  folders.forEach(f=>{
+    const name=String(f&&f.name||'').trim(); if(!name)return;
+    const node={id:'int:'+(f.id||name),label:name,folder:name,files:[],children:[]};
+    map.set(name,node);
+  });
+  folders.forEach(f=>{
+    const name=String(f&&f.name||'').trim(); const node=map.get(name); if(!node)return;
+    const parentName=String(f&&f.parent||'').trim(); const parent=parentName&&map.get(parentName);
+    if(parent&&parent!==node)parent.children.push(node);else root.children.push(node);
+  });
+  notes.forEach(n=>{
+    const folder=noteFolder(n);
+    if(!folder){root.files.push(n);return;}
+    let node=map.get(folder);
+    if(!node){
+      node={id:(isAbsFolder(folder)?'disk:':'path:')+folder,label:folderLabel(folder),folder,files:[],children:[]};
+      map.set(folder,node);root.children.push(node);
+    }
+    node.files.push(n);
+  });
+  return root;
+}
+function filterFolderNode(node,q){
+  if(!q)return node;
+  const children=node.children.map(c=>filterFolderNode(c,q)).filter(Boolean);
+  const files=node.files.filter(n=>noteName(n).toLowerCase().includes(q)||String(n.text||'').toLowerCase().includes(q));
+  if(node.label.toLowerCase().includes(q)||children.length||files.length)
+    return Object.assign({},node,{children,files});
+  return null;
+}
+function folderRowHTML(node,depth){
+  const open=folderOpen[node.id]!==false;
+  const count=node.files.length+node.children.reduce((s,c)=>s+c.files.length,0);
+  return '<div class="tree-row" data-folder="'+esc(node.id)+'" style="padding-left:'+(8+depth*14)+'px" '+
+    'title="'+esc(node.folder||t('unassigned'))+'">'+
+    '<span class="tree-caret" data-toggle="'+esc(node.id)+'">'+(open?'▾':'▸')+'</span>'+
+    '<span class="tree-icon">▣</span><span class="tree-label">'+esc(node.label)+'</span>'+
+    (count?'<span class="tree-count">'+count+'</span>':'')+
+    '<span class="tree-more" data-new="'+esc(node.folder)+'" title="'+esc(t('newFile'))+'">+</span></div>';
+}
+function folderFileHTML(n,depth){
+  return '<div class="tree-row file'+(keyOf(n)===selected?' on':'')+'" data-id="'+keyOf(n)+'" '+
+    'style="padding-left:'+(8+depth*14)+'px" title="'+esc(noteFolder(n)||t('unassigned'))+'">'+
+    '<span class="tree-icon">·</span><span class="tree-label">'+esc(noteName(n))+'</span></div>';
+}
+function renderFolderTree(){
+  const q=($('folderFilter').value||'').trim().toLowerCase();
+  const root=filterFolderNode(folderNodes(),q);
+  if(!root){
+    $('folderTree').innerHTML='<div class="side-empty">'+esc(t('noMatches'))+'</div>';
+    return;
+  }
+  const rows=[];
+  const walk=(node,depth)=>{
+    rows.push(folderRowHTML(node,depth));
+    if(folderOpen[node.id]===false)return;
+    node.files.forEach(n=>rows.push(folderFileHTML(n,depth+1)));
+    node.children.forEach(c=>walk(c,depth+1));
+  };
+  walk(root,0);
+  $('folderTree').innerHTML=rows.join('');
+  $('folderTree').querySelectorAll('[data-toggle]').forEach(el=>{
+    el.onclick=e=>{
+      e.stopPropagation();
+      const id=el.dataset.toggle;
+      folderOpen[id]=!(folderOpen[id]!==false);
+      saveFolderOpen();renderFolderTree();
+    };
+  });
+  $('folderTree').querySelectorAll('.tree-row[data-folder]').forEach(el=>{
+    el.onclick=()=>{
+      const id=el.dataset.folder;
+      folderOpen[id]=!(folderOpen[id]!==false);
+      saveFolderOpen();renderFolderTree();
+    };
+  });
+  $('folderTree').querySelectorAll('[data-new]').forEach(el=>{
+    el.onclick=e=>{e.stopPropagation();openFileDialog(el.dataset.new);};
+  });
+  $('folderTree').querySelectorAll('.tree-row.file').forEach(el=>{
+    el.onclick=()=>select(Number(el.dataset.id),true);
+  });
+}
+function openFileDialog(folder){
+  fileDialogFolder=String(folder||'');
+  $('fileDlgName').value='';
+  $('fileDlgFolder').value=fileDialogFolder;
+  $('fileDialog').classList.remove('hidden');
+  $('fileDlgName').focus();
+}
+function closeFileDialog(){$('fileDialog').classList.add('hidden');}
+async function browseFileFolder(){
+  try{
+    const picked=await nm_pick_folder(t('selectFolder'));
+    if(picked){fileDialogFolder=picked;$('fileDlgFolder').value=picked;}
+  }catch(e){fail(e);}
+}
+async function confirmFileDialog(){
+  const name=$('fileDlgName').value.trim();
+  if(!name){message(t('errorInvalidName'));$('fileDlgName').focus();return;}
+  let folder=$('fileDlgFolder').value.trim();
+  if(!folder){
+    try{folder=await nm_pick_folder(t('selectFolder'));}catch(e){fail(e);return;}
+  }
+  closeFileDialog();
+  try{
+    const id=Number(await nm_add_file(name,folder,''));
+    await load();
+    selected=null;select(id,true);
+    message(t('fileCreated'));
+  }catch(e){fail(e);}
+}
+function openProjectDialog(){
+  $('projectDlgName').value='';
+  $('projectDialog').classList.remove('hidden');
+  $('projectDlgName').focus();
+}
+function closeProjectDialog(){$('projectDialog').classList.add('hidden');}
+function confirmProjectDialog(){
+  const name=$('projectDlgName').value.trim();
+  if(!name){message(t('errorInvalidName'));$('projectDlgName').focus();return;}
+  folders.push({id:'f_'+Date.now(),name,parent:''});
+  saveFolders();closeProjectDialog();renderFolderTree();
+  message(t('projectCreated'));
+}
 function showEditor(show){
   textEl.classList.toggle('hidden',!show);
   $('highlight').classList.toggle('hidden',!show);
   $('gutter').classList.toggle('hidden',!show);
+  $('minimap').classList.toggle('hidden',!show);
   $('welcome').classList.toggle('hidden',show);
-  $('tab').classList.toggle('hidden',!show);
+  $('tab').classList.toggle('hidden',!show||selected===null);
   if(show)refreshHighlight();
 }
 function select(id,noFocus){
-  if(selected===id && !textEl.classList.contains('hidden')) return;
+  if(selected===id&&!textEl.classList.contains('hidden'))return;
   flushSave();
   const n=notes.find(x=>keyOf(x)===id);
   if(!n)return;
@@ -1128,20 +1982,20 @@ function select(id,noFocus){
   textEl.value=n.text;
   const chosen=localStorage.getItem('nm_lang_'+String(id));
   $('langMode').value=(chosen&&LANGS[chosen])?chosen:'auto';
-  $('tabName').textContent=titleOf(n.text);
-  $('crumb').textContent=titleOf(n.text);
+  $('tabName').textContent=titleOf(n);
+  crumbForView(currentView);
   showEditor(true);
   $('saved').textContent=''; $('tabDirty').classList.add('hidden');
-  lineNumbers(); updatePos(); refreshHighlight(); render();
+  lineNumbers(); updatePos(); markSelected(); renderFolderTree();
   if(window.nm_report)nm_report('lang '+activeLang()+' tokens '+($('highlight').innerHTML.match(/tok-/g)||[]).length);
   if(!noFocus){textEl.focus();textEl.setSelectionRange(0,0);}
 }
 function closeEditor(){
-  flushSave(false); selected=null; showEditor(false); render();
+  flushSave(false);selected=null;showEditor(false);markSelected();renderFolderTree();crumbForView(currentView);
 }
 function setDirty(){
-  $('saved').textContent='unsaved'; $('tabDirty').classList.remove('hidden');
-  lineNumbers(); updatePos(); refreshHighlight();
+  $('saved').textContent=t('unsaved'); $('tabDirty').classList.remove('hidden');
+  lineNumbers(); updatePos(); drawMinimap(); scheduleHighlight();
   clearTimeout(saveTimer); saveTimer=setTimeout(()=>save(true),900);
 }
 function flushSave(reselect){
@@ -1151,29 +2005,25 @@ async function save(silent,reselect){
   if(selected===null)return;
   clearTimeout(saveTimer);saveTimer=null;
   const text=textEl.value, keep=selected;
+  const n=notes.find(x=>keyOf(x)===keep);
+  const name=noteName(n), folder=noteFolder(n);
   try{
-    await nm_update(String(keep),text);
-    await load();
-    if(reselect===false){
-      $('saved').textContent='saved';
-      $('tabDirty').classList.add('hidden');
-      return;
-    }
-    selected=null;
-    select(keep,true);
+    await nm_update_file(String(keep),name,folder,text);
+    if(n){n.text=text;n.name=name;n.folder=folder;}
+    $('tabName').textContent=name;
+    crumbForView(currentView);
+    const preview=listEl.querySelector('.row[data-id="'+keep+'"] .s');
+    if(preview)preview.textContent=String(text||'').replace(/\s+/g,' ').trim();
+    renderFolderTree();
     $('tabDirty').classList.add('hidden');
-    $('saved').textContent='saved';
-    if(!silent)message('Saved');
+    $('saved').textContent=t('saved');
+    if(!silent)message(t('savedMsg'));
   }catch(e){fail(e);}
 }
 async function create(){
-  try{
-    const id=Number(await nm_add('New note'));
-    await load(); closePalette();
-    selected=null; select(id);
-    textEl.focus(); textEl.select();
-    message('Note created');
-  }catch(e){fail(e);}
+  closePalette();
+  if(currentView!=='files'&&currentView!=='folders')switchView('files');
+  openFileDialog('');
 }
 function ask(title,body,yes,action){
   $('confTitle').textContent=title; $('confBody').textContent=body;
@@ -1185,10 +2035,10 @@ function closeConfirm(){$('confirm').classList.add('hidden');confirmAction=null;
 async function remove(){
   if(selected===null)return;
   const n=notes.find(x=>keyOf(x)===selected);
-  ask('Delete note','“'+titleOf(n?n.text:'')+'” will be deleted permanently.','Delete',async()=>{
+  ask(t('deleteNote'),t('deleteBody',{name:titleOf(n)}),t('delete'),async()=>{
     try{
       await nm_delete(String(selected));
-      selected=null; closeEditor(); await load(); message('Note deleted');
+      selected=null; closeEditor(); await load(); message(t('noteDeleted'));
     }catch(e){fail(e);}
   });
 }
@@ -1200,12 +2050,12 @@ function openPalette(){
 function closePalette(){$('palette').classList.add('hidden');}
 function renderPalette(){
   const q=$('palInput').value.trim().toLowerCase();
-  const items=palItems.filter(n=>!q||n.text.toLowerCase().includes(q)).slice(0,50);
+  const items=palItems.filter(n=>!q||(noteName(n)+' '+n.text).toLowerCase().includes(q)).slice(0,50);
   palItems=items;
   if(palIndex>=items.length)palIndex=0;
   $('palOpts').innerHTML=items.length?items.map((n,i)=>
-    '<div class="opt'+(i===palIndex?' on':'')+'" data-id="'+keyOf(n)+'"><span>'+esc(titleOf(n.text))+'</span><span>'+esc(fmt(timeOf(n)))+'</span></div>').join('')
-    :'<div class="opt"><span>No matches</span></div>';
+    '<div class="opt'+(i===palIndex?' on':'')+'" data-id="'+keyOf(n)+'"><span>'+esc(titleOf(n))+'</span><span>'+esc(fmt(timeOf(n)))+'</span></div>').join('')
+    :'<div class="opt"><span>'+esc(t('noMatches'))+'</span></div>';
   $('palOpts').querySelectorAll('.opt[data-id]').forEach(el=>{
     el.onclick=()=>{select(Number(el.dataset.id));closePalette();};
   });
@@ -1213,9 +2063,24 @@ function renderPalette(){
 
 $('newBtn').onclick=create; $('newTop').onclick=create; $('welcomeNew').onclick=create;
 $('tabClose').onclick=closeEditor;
+$('actFolders').onclick=()=>switchView('folders');
+$('folderNew').onclick=openProjectDialog;
+$('folderAddRoot').onclick=openProjectDialog;
+$('folderFileNew').onclick=()=>openFileDialog('');
+$('folderFilter').oninput=renderFolderTree;
+$('fileDlgBrowse').onclick=browseFileFolder;
+$('fileDlgNo').onclick=closeFileDialog;
+$('fileDlgYes').onclick=confirmFileDialog;
+$('projectDlgNo').onclick=closeProjectDialog;
+$('projectDlgYes').onclick=confirmProjectDialog;
+$('uiLang').onchange=()=>{
+  uiLocale=$('uiLang').value;
+  localStorage.setItem('nm_locale',uiLocale);
+  applyI18n();
+};
 $('actLangs').onclick=()=>switchView('langs');
-$('langRefresh').onclick=loadLanguages;
-$('langRefreshSide').onclick=loadLanguages;
+$('langRefresh').onclick=()=>loadLanguages();
+$('langRefreshSide').onclick=()=>loadLanguages();
 $('langSearch').oninput=renderLangs;
 $('langSelAll').onclick=()=>setAllLangs(true);
 $('langSelNone').onclick=()=>setAllLangs(false);
@@ -1232,7 +2097,7 @@ document.querySelectorAll('.ex-tab').forEach(t=>{
 $('exitFocus').onclick=()=>toggleTweak('focus');
 $('sortBtn').onclick=()=>{
   sortMode=sortMode==='date-desc'?'date-asc':sortMode==='date-asc'?'title':'date-desc';
-  message('Sort: '+(sortMode==='date-desc'?'newest first':sortMode==='date-asc'?'oldest first':'by title'));
+  message(t(sortMode==='date-desc'?'sortNewest':sortMode==='date-asc'?'sortOldest':'sortTitle'));
   render();
 };
 searchEl.oninput=render;
@@ -1241,6 +2106,7 @@ textEl.onclick=updatePos; textEl.onkeyup=updatePos; textEl.onselect=updatePos;
 textEl.onscroll=()=>{
   $('gutter').scrollTop=textEl.scrollTop;
   const pre=$('highlight');pre.scrollTop=textEl.scrollTop;pre.scrollLeft=textEl.scrollLeft;
+  drawMinimap();
 };
 $('langMode').onchange=()=>{
   const v=$('langMode').value;
@@ -1249,10 +2115,15 @@ $('langMode').onchange=()=>{
     else localStorage.setItem('nm_lang_'+String(selected),v);
   }
   refreshHighlight();
-  message('Syntax: '+$('langMode').selectedOptions[0].textContent);
+  message(t('syntax',{name:$('langMode').selectedOptions[0].textContent}));
 };
+$('minimap').onmousedown=e=>{e.preventDefault();miniDrag=true;miniScroll(e);};
+document.onmousemove=e=>{if(miniDrag)miniScroll(e);};
+document.onmouseup=()=>{miniDrag=false;};
+window.onresize=drawMinimap;
 $('actFiles').onclick=()=>{switchView('files');listEl.focus();};
 $('actSearch').onclick=()=>{
+  if(currentView==='folders'){$('folderFilter').focus();return;}
   if(currentView!=='files')switchView('files');
   searchEl.focus();
 };
@@ -1263,6 +2134,16 @@ $('palInput').oninput=()=>{palIndex=0;renderPalette();};
 
 document.onkeydown=e=>{
   const mod=e.ctrlKey||e.metaKey, k=e.key.toLowerCase();
+  if(!$('fileDialog').classList.contains('hidden')){
+    if(e.key==='Escape'){e.preventDefault();closeFileDialog();}
+    if(e.key==='Enter'){e.preventDefault();confirmFileDialog();}
+    return;
+  }
+  if(!$('projectDialog').classList.contains('hidden')){
+    if(e.key==='Escape'){e.preventDefault();closeProjectDialog();}
+    if(e.key==='Enter'){e.preventDefault();confirmProjectDialog();}
+    return;
+  }
   if(!$('confirm').classList.contains('hidden')){
     if(e.key==='Escape'){e.preventDefault();closeConfirm();}
     if(e.key==='Enter'){e.preventDefault();$('confYes').click();}
@@ -1275,17 +2156,18 @@ document.onkeydown=e=>{
     if(e.key==='Enter'&&palItems.length){e.preventDefault();select(keyOf(palItems[palIndex]));closePalette();}
     return;
   }
-  if(mod&&k==='s'){e.preventDefault();if(currentView==='files')save(false);return;}
-  if(mod&&k==='n'){e.preventDefault();if(currentView!=='files')switchView('files');create();return;}
+  if(mod&&k==='s'){e.preventDefault();if(currentView==='files'||currentView==='folders')save(false);return;}
+  if(mod&&k==='n'){e.preventDefault();create();return;}
   if(mod&&k==='p'){e.preventDefault();if(currentView!=='files')switchView('files');openPalette();return;}
   if(mod&&k==='f'){
     e.preventDefault();
-    if(currentView==='langs'){langSearchEl.focus();langSearchEl.select();}
+    if(currentView==='folders'){ $('folderFilter').focus(); }
+    else if(currentView==='langs'){langSearchEl.focus();langSearchEl.select();}
     else if(currentView==='mods'){modsSearchEl.focus();modsSearchEl.select();}
     else{searchEl.focus();searchEl.select();}
     return;
   }
-  if(mod&&k==='d'){e.preventDefault();if(currentView==='files')remove();return;}
+  if(mod&&k==='d'){e.preventDefault();if(currentView==='files'||currentView==='folders')remove();return;}
   if(document.activeElement===listEl){
     if(e.key==='ArrowDown'||e.key==='ArrowUp'){
       e.preventDefault();
@@ -1298,6 +2180,7 @@ document.onkeydown=e=>{
     if(e.key==='Enter'&&selected!==null){e.preventDefault();textEl.focus();}
   }
   if(e.key==='Escape'&&document.activeElement===searchEl){searchEl.value='';render();textEl.focus();}
+  if(e.key==='Escape'&&document.activeElement===$('folderFilter')){$('folderFilter').value='';renderFolderTree();}
 };
 
 // resizable sidebar
@@ -1324,7 +2207,7 @@ document.onkeydown=e=>{
 if(window.nm_report){
   window.onerror=(msg,src,line,col)=>{nm_report('JS ERROR '+msg+' @'+line+':'+col);};
 }
-applyModClasses(); load(); loadStatus(); loadLanguages(); loadTopMods(); loadCuratedMods();
+applyModClasses(); applyI18n(); load(); loadStatus();
 </script>
 </body>
 </html>

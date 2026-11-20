@@ -50,6 +50,10 @@ pub fn json_escape(s: &str) -> String {
 pub struct Note {
     pub id: u64,
     pub text: String,
+    /// File name shown in the Folders tree. Empty for legacy notes.
+    pub name: String,
+    /// Internal folder path or an absolute path on disk. Empty for legacy notes.
+    pub folder: String,
 }
 
 impl Note {
@@ -117,10 +121,22 @@ pub fn note_list() -> Vec<Note> {
     let mut notes: Vec<Note> = raw
         .lines()
         .filter_map(|line| {
-            let (id, text) = line.split_once('\t')?;
+            let mut parts = line.splitn(4, '\t');
+            let id: u64 = parts.next()?.parse().ok()?;
+            let first = parts.next()?;
+            // New format: id<TAB>name<TAB>folder<TAB>text.
+            // Old format: id<TAB>text — still readable without migration.
+            let (name, folder, text) = match (parts.next(), parts.next()) {
+                (Some(folder), Some(text)) => {
+                    (decode_text(first), decode_text(folder), decode_text(text))
+                }
+                _ => (String::new(), String::new(), decode_text(first)),
+            };
             Some(Note {
-                id: id.parse().ok()?,
-                text: decode_text(text),
+                id,
+                text,
+                name,
+                folder,
             })
         })
         .collect();
@@ -128,15 +144,26 @@ pub fn note_list() -> Vec<Note> {
     notes
 }
 
+fn check_len(text: &str) -> Result<(), String> {
+    if text.chars().count() > 20_000 {
+        return Err("file is too long (max 20000 characters)".into());
+    }
+    Ok(())
+}
+
 fn clean_text(text: &str) -> Result<String, String> {
     let clean = text.trim().to_string();
     if clean.is_empty() {
         return Err("note is empty".into());
     }
-    if clean.chars().count() > 20_000 {
-        return Err("note is too long (max 20000 characters)".into());
-    }
+    check_len(&clean)?;
     Ok(clean)
+}
+
+/// Code files keep their exact formatting — no trimming.
+fn file_text(text: &str) -> Result<String, String> {
+    check_len(text)?;
+    Ok(text.to_string())
 }
 
 fn write_all(notes: &[Note]) -> Result<(), String> {
@@ -150,33 +177,78 @@ fn write_all(notes: &[Note]) -> Result<(), String> {
             .open(&tmp)
             .map_err(|e| format!("cannot open temp notes: {e}"))?;
         for n in notes {
-            writeln!(file, "{}\t{}", n.id, encode_text(&n.text))
-                .map_err(|e| format!("cannot write note: {e}"))?;
+            writeln!(
+                file,
+                "{}\t{}\t{}\t{}",
+                n.id,
+                encode_text(&n.name),
+                encode_text(&n.folder),
+                encode_text(&n.text)
+            )
+            .map_err(|e| format!("cannot write note: {e}"))?;
         }
         file.flush().ok();
     }
     fs::rename(&tmp, notes_path()).map_err(|e| format!("cannot replace notes: {e}"))
 }
 
-/// Add a note and return its id.
-pub fn note_add(text: &str) -> Result<u64, String> {
-    let clean = clean_text(text)?;
-    let mut notes = note_list();
+fn next_id(notes: &[Note]) -> u64 {
     let mut id = now_millis();
     if let Some(last) = notes.last() {
         if id <= last.id {
             id = last.id.saturating_add(1);
         }
     }
+    id
+}
+
+fn append_note(note: &Note) -> Result<(), String> {
     fs::create_dir_all(data_dir()).map_err(|e| format!("cannot create data dir: {e}"))?;
     let mut file = OpenOptions::new()
         .create(true)
         .append(true)
         .open(notes_path())
         .map_err(|e| format!("cannot open notes: {e}"))?;
-    writeln!(file, "{}\t{}", id, encode_text(&clean))
-        .map_err(|e| format!("cannot write note: {e}"))?;
-    notes.push(Note { id, text: clean });
+    writeln!(
+        file,
+        "{}\t{}\t{}\t{}",
+        note.id,
+        encode_text(&note.name),
+        encode_text(&note.folder),
+        encode_text(&note.text)
+    )
+    .map_err(|e| format!("cannot write note: {e}"))
+}
+
+/// Add a legacy note and return its id.
+pub fn note_add(text: &str) -> Result<u64, String> {
+    let clean = clean_text(text)?;
+    let notes = note_list();
+    let id = next_id(&notes);
+    append_note(&Note {
+        id,
+        text: clean,
+        name: String::new(),
+        folder: String::new(),
+    })?;
+    Ok(id)
+}
+
+/// Add a named file, optionally inside an internal or on-disk folder.
+pub fn note_add_file(name: &str, folder: &str, text: &str) -> Result<u64, String> {
+    let name = name.trim();
+    if name.is_empty() {
+        return Err("file name is empty".into());
+    }
+    let text = file_text(text)?;
+    let notes = note_list();
+    let id = next_id(&notes);
+    append_note(&Note {
+        id,
+        text,
+        name: name.to_string(),
+        folder: folder.to_string(),
+    })?;
     Ok(id)
 }
 
@@ -187,6 +259,26 @@ pub fn note_update(id: u64, text: &str) -> Result<(), String> {
     match found {
         Some(n) => {
             n.text = clean;
+            write_all(&notes)
+        }
+        None => Err(format!("note {id} not found")),
+    }
+}
+
+/// Update a file's content, name and folder without reformatting its text.
+pub fn note_update_file(id: u64, name: &str, folder: &str, text: &str) -> Result<(), String> {
+    let name = name.trim();
+    if name.is_empty() {
+        return Err("file name is empty".into());
+    }
+    let text = file_text(text)?;
+    let mut notes = note_list();
+    let found = notes.iter_mut().find(|n| n.id == id);
+    match found {
+        Some(n) => {
+            n.name = name.to_string();
+            n.folder = folder.to_string();
+            n.text = text;
             write_all(&notes)
         }
         None => Err(format!("note {id} not found")),
@@ -213,9 +305,11 @@ pub fn note_clear() -> Result<(), String> {
 
 fn note_json(n: &Note) -> String {
     format!(
-        "{{\"id\":{},\"created\":{},\"text\":\"{}\"}}",
+        "{{\"id\":{},\"created\":{},\"name\":\"{}\",\"folder\":\"{}\",\"text\":\"{}\"}}",
         n.id,
         n.created_millis(),
+        json_escape(&n.name),
+        json_escape(&n.folder),
         json_escape(&n.text)
     )
 }
