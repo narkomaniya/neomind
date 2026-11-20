@@ -123,6 +123,14 @@ func bindAll(w webview.WebView) {
 		return mods.JSON(), nil
 	})
 
+	bind(w, "nm_mods_top", func() (string, error) {
+		return mods.TopJSON(), nil
+	})
+
+	bind(w, "nm_mods_search", func(query string) (string, error) {
+		return mods.Search(query)
+	})
+
 	bind(w, "nm_mods_open", func(rawURL string) (string, error) {
 		if err := mods.Open(rawURL); err != nil {
 			return "", err

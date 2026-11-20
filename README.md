@@ -2,11 +2,12 @@
 
 A small, fast note keeper built as **Rust core + Go CLI + native desktop GUI**.
 
-Version **0.4.0** ships three binaries: a Rust core with all storage logic, a Go
+Version **0.5.0** ships three binaries: a Rust core with all storage logic, a Go
 CLI for scripts and diagnostics, and a Go/WebView desktop window with a proper
-interface, a language/toolchain installer and a curated mods catalog. The CLI
-and GUI never link against Rust directly — they call `neomind-core <op> [args...]`,
-which answers with one JSON line. This keeps the build portable.
+interface, a language/toolchain installer and a VS Code-style Extensions catalog.
+The CLI and GUI never link against Rust directly — they call
+`neomind-core <op> [args...]`, which answers with one JSON line. This keeps the
+build portable.
 
 ## What you get
 
@@ -64,8 +65,9 @@ colours, just greys and 1px borders.
   Node.js, Java, C/C++ (MinGW), .NET, Ruby, PHP and Perl with installed status,
   multi-select and **install-all / install-selected** in one background job
   (winget on Windows) with live progress and a log
-- **Mods & themes** view (third activity-bar icon): a curated cosmetic catalog
-  and local UI tweaks — see below
+- **Extensions** view (third activity-bar icon): a VS Code-style catalog of the
+  100 most installed extensions, live Marketplace search, and local UI tweaks —
+  see below
 
 Notes live in `~/.neomind/notes.txt` (`%USERPROFILE%\.neomind\notes.txt`) as
 `id<TAB>escaped text` lines — easy to back up. `NEOMIND_DATA_DIR` redirects the
@@ -73,27 +75,37 @@ storage location.
 
 ## Mods & themes
 
-The third activity-bar icon opens a marketplace-style catalog, but with one
-important rule: **NeoMind never installs third-party code**. Nothing from the
-catalog is downloaded, executed, or linked into the app, so a mod can never
-break your notes or the Rust core. Two groups live here:
+The third activity-bar icon opens an **Extensions** view built like VS Code's:
+a searchable list on the left and a detail pane on the right with an icon,
+publisher, install count, rating, an identifier/key-value block and links. One
+rule still applies: **NeoMind never installs third-party code**. Nothing is
+downloaded, executed or linked into the app, so an extension can never break
+your notes or the Rust core.
 
-- **Curated VS Code mods** — 17 cosmetic themes and icon themes (Dracula, One
-  Dark Pro, GitHub Theme, Material Theme, Nord, Tokyo Night, Catppuccin and
-  built-in themes such as Quiet Light, Solarized Dark, Monokai). Each card shows
-  the author's GitHub avatar (desaturated to match the monochrome UI), a SAFE
-  badge, the license, a **Source** link to the open repository and a
-  **Marketplace** link to the VS Code listing. All links are allow-listed to
-  GitHub / the Visual Studio Marketplace and open in your browser — `mods.Open`
-  rejects every other host and any non-HTTPS URL.
-- **NeoMind tweaks** — safe local CSS classes, stored in `localStorage` under
-  `nm_mods`: compact UI, no line numbers, wide sidebar, monospace UI, high
-  contrast, hide status bar and focus mode (with an **Exit focus mode** button).
-  They only change how the existing interface looks; they add no external code.
+- **Top 100** — the 100 most installed VS Code extensions, generated from the
+  Marketplace by `scripts/gen-top100.ps1` into `internal/mods/top_data.go`.
+  Cards show desaturated author icons, install counts and ratings. Sorting by
+  installs/rating/name works locally.
+- **Live search** — typing in the search box queries the VS Code Marketplace
+  through `nm_mods_search` (up to 50 results). Search is read-only; no VSIX is
+  downloaded. The bundled top-100 is used when the box is empty or offline.
+- **Cosmetic** filter — switches to the original 17 safe cosmetic themes/icon
+  themes with a SAFE badge and license info.
+- **NeoMind tweaks** tab — safe local CSS classes, stored in `localStorage`
+  under `nm_mods`: compact UI, no line numbers, wide sidebar, monospace UI,
+  high contrast, hide status bar and focus mode (with an **Exit focus mode**
+  button). They only restyle the interface; they add no external code.
+- Extensions that execute code in VS Code get an `EXECUTES CODE` marker —
+  informative only, since nothing is installed here.
 
-The catalog lives in `internal/mods` with tests that reject duplicate IDs,
-missing links and unsafe entries. Only cosmetic themes/icon themes make it in —
-no arbitrary extensions, no code execution, no storage or core changes.
+All external links go through `mods.Open`, which allow-lists GitHub and the
+Visual Studio Marketplace over HTTPS and rejects every other host. The catalog
+lives in `internal/mods` with tests that reject duplicate IDs, missing links and
+links outside the allowlist. Regenerate it with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\gen-top100.ps1
+```
 
 ## CLI
 
