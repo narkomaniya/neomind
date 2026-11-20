@@ -50,10 +50,16 @@ themselves. Override with `NEOMIND_CORE=/path/to/neomind-core`.
 
 ## GUI
 
-- note list with search and live preview
-- multiline editor with **auto-save** (1.2 s) and Ctrl+S
-- create (Ctrl+N), delete, open storage folder
-- empty state, toasts, keyboard hints
+Strict monochrome workbench in the spirit of VS Code — no gradients, no accent
+colours, just greys and 1px borders.
+
+- explorer sidebar with filter, live preview and sort (date / title)
+- resizable sidebar (drag the divider), width is remembered
+- tab bar, breadcrumbs, line numbers and a status bar (core version, note count, Ln/Col, save state)
+- multiline editor with **auto-save** (0.9 s) and Ctrl+S
+- **Ctrl+P** quick-open palette, **Ctrl+F** filter, **Ctrl+N** new note, **Ctrl+D** delete
+- arrow-key navigation in the list, Enter to focus the editor
+- in-app confirmation dialog instead of the native OS prompt
 
 Notes live in `~/.neomind/notes.txt` (`%USERPROFILE%\.neomind\notes.txt`) as
 `id<TAB>escaped text` lines — easy to back up. `NEOMIND_DATA_DIR` redirects the
