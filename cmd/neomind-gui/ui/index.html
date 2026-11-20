@@ -381,9 +381,21 @@
   .dialog .foot button:hover{background:var(--hover);color:var(--bright)}
   .dialog .foot .ok{background:var(--bright);color:#000;border-color:var(--bright)}
   .dialog .foot .ok:hover{background:#ddd;color:#000}
+  .win-actions{position:fixed;top:4px;right:8px;z-index:80;display:flex;gap:2px;padding:2px;background:var(--editor);border:1px solid var(--border);border-radius:4px;opacity:.75}
+  .win-actions:hover{opacity:1}
+  .win-actions button{width:22px;height:20px;border:0;border-radius:2px;background:transparent;color:var(--muted);font-size:12px;line-height:1;cursor:pointer}
+  .win-actions button:hover{background:var(--hover);color:var(--text)}
+  body.light-mode .status,body.light-mode .welcome,body.light-mode .palette,
+  body.light-mode #actLangs,body.light-mode #actMods,body.light-mode #actSearch,
+  body.light-mode #actFolder,body.light-mode #minimap{display:none !important}
 </style>
 </head>
 <body>
+<div class="win-actions">
+  <button id="winMin" data-i18n-title="minimize" title="Minimize">−</button>
+  <button id="winLight" data-i18n-title="lightMode" title="Light mode">⚡</button>
+  <button id="winClose" data-i18n-title="closeWindow" title="Close">×</button>
+</div>
 <div class="workbench">
   <div class="activity">
     <button class="act on" id="actFiles" title="Explorer"><svg viewBox="0 0 24 24"><path d="M4 4h6l2 2h8v12H4z"/></svg></button>
@@ -654,7 +666,11 @@ let folderOpen=readStore('nm_folder_open',{});
 if(!folderOpen||typeof folderOpen!=='object'||Array.isArray(folderOpen))folderOpen={};
 let fileDialogFolder='';
 let highlightTimer=null;
-let coreVersion='', coreStatusOk=false;
+let coreVersion='', coreStatusOk=false, lightMode=false;
+// Large files skip live syntax highlighting; the editor stays responsive.
+const HIGHLIGHT_LIMIT=25000;
+let lineTimer=null, posTimer=null, lastLineCount=-1;
+let miniBase=null, miniDirty=true, miniSize='', miniFrame=0;
 
 /* ---------- interface localization ---------- */
 const SUPPORTED_LOCALES=['en','ru','uk','es','de','fr','zh','ja'];
@@ -1094,6 +1110,20 @@ I18N.de.errorPickerWindows='Die Ordnerauswahl ist nur unter Windows verfügbar';
 I18N.fr.errorPickerWindows='Le sélecteur de dossiers est disponible uniquement sous Windows';
 I18N.zh.errorPickerWindows='文件夹选择器仅在 Windows 上可用';
 I18N.ja.errorPickerWindows='フォルダー選択は Windows でのみ利用できます';
+I18N.en.lightMode='Light mode (restart)'; I18N.ru.lightMode='Лёгкий режим (перезапуск)';
+I18N.uk.lightMode='Легкий режим (перезапуск)'; I18N.es.lightMode='Modo ligero (reiniciar)';
+I18N.de.lightMode='Leichter Modus (Neustart)'; I18N.fr.lightMode='Mode leger (redemarrer)';
+I18N.zh.lightMode='轻量模式（重启）'; I18N.ja.lightMode='ライトモード（再起動）';
+I18N.en.exitLightMode='Full mode (restart)'; I18N.ru.exitLightMode='Полный режим (перезапуск)';
+I18N.uk.exitLightMode='Повний режим (перезапуск)'; I18N.es.exitLightMode='Modo completo (reiniciar)';
+I18N.de.exitLightMode='Vollmodus (Neustart)'; I18N.fr.exitLightMode='Mode complet (redemarrer)';
+I18N.zh.exitLightMode='完整模式（重启）'; I18N.ja.exitLightMode='フルモード（再起動）';
+I18N.en.minimize='Minimize'; I18N.ru.minimize='Свернуть'; I18N.uk.minimize='Згорнути';
+I18N.es.minimize='Minimizar'; I18N.de.minimize='Minimieren'; I18N.fr.minimize='Reduire';
+I18N.zh.minimize='最小化'; I18N.ja.minimize='最小化';
+I18N.en.closeWindow='Close'; I18N.ru.closeWindow='Закрыть'; I18N.uk.closeWindow='Закрити';
+I18N.es.closeWindow='Cerrar'; I18N.de.closeWindow='Schliessen'; I18N.fr.closeWindow='Fermer';
+I18N.zh.closeWindow='关闭'; I18N.ja.closeWindow='閉じる';
 let uiLocale=localStorage.getItem('nm_locale')||'en';
 if(!SUPPORTED_LOCALES.includes(uiLocale))uiLocale='en';
 function t(key,vars){
@@ -1214,8 +1244,14 @@ function fail(e){
 }
 function lineNumbers(){
   const n=textEl.value.split('\n').length;
+  if(n===lastLineCount)return;
+  lastLineCount=n;
   let s='';for(let i=1;i<=n;i++)s+=i+'\n';
   $('gutter').textContent=s;
+}
+function scheduleLineNumbers(){
+  if(lineTimer)return;
+  lineTimer=setTimeout(()=>{lineTimer=null;lineNumbers();},120);
 }
 
 /* ---------- syntax highlighting — VS Code Dark+ palette ---------- */
@@ -1387,42 +1423,93 @@ function tokenize(code,langId){
 function refreshHighlight(){
   const pre=$('highlight');
   if(textEl.classList.contains('hidden')){pre.classList.add('hidden');return;}
+  if(textEl.value.length>HIGHLIGHT_LIMIT){
+    // Tokenizing a huge buffer on every pause is what makes the editor crawl.
+    pre.classList.add('hidden');
+    miniDirty=true;drawMinimap();
+    return;
+  }
   pre.classList.remove('hidden');
   pre.innerHTML=tokenize(textEl.value,activeLang())+'\n';
   pre.scrollTop=textEl.scrollTop;pre.scrollLeft=textEl.scrollLeft;
-  drawMinimap();
+  miniDirty=true;drawMinimap();
 }
 function scheduleHighlight(){
   if(highlightTimer)clearTimeout(highlightTimer);
   highlightTimer=setTimeout(()=>{highlightTimer=null;refreshHighlight();},160);
 }
-function drawMinimap(){
+function miniGeometry(){
   const mini=$('minimap'), canvas=$('miniCanvas');
-  if(mini.classList.contains('hidden')||document.body.classList.contains('mod-no-minimap'))return;
   const dpr=window.devicePixelRatio||1;
   const w=42,h=Math.max(1,mini.clientHeight);
-  if(canvas.width!==Math.floor(w*dpr)||canvas.height!==Math.floor(h*dpr)){
-    canvas.width=Math.floor(w*dpr);canvas.height=Math.floor(h*dpr);
-  }
-  const ctx=canvas.getContext('2d');
+  return {mini,canvas,dpr,w,h,size:Math.floor(w*dpr)+'x'+Math.floor(h*dpr)};
+}
+function buildMiniBase(w,h,dpr){
+  if(!miniBase)miniBase=document.createElement('canvas');
+  miniBase.width=Math.floor(w*dpr);miniBase.height=Math.floor(h*dpr);
+  const ctx=miniBase.getContext('2d');
   if(!ctx)return;
   ctx.setTransform(dpr,0,0,dpr,0,0);
   ctx.clearRect(0,0,w,h);
   ctx.fillStyle='#1e1e1e';ctx.fillRect(0,0,w,h);
-  const lines=textEl.value.split('\n');
-  const row=2, shown=Math.min(lines.length,Math.floor(h/row));
-  for(let i=0;i<shown;i++){
-    const text=lines[i]||' ';
+  // Only read the lines that can actually be drawn; splitting a 200k buffer
+  // just to render ~250 minimap rows was a visible stall.
+  const value=textEl.value, row=2, rows=Math.floor(h/row);
+  let pos=0;
+  for(let i=0;i<rows;i++){
+    const j=value.indexOf('\n',pos);
+    const text=j<0?value.slice(pos):value.slice(pos,j);
     let len=0;while(len<text.length&&/\s/.test(text[len]))len++;
     const width=Math.max(3,Math.min(w-4,text.length*2.2));
     ctx.fillStyle=len?'#d4d4d4':'#7a7a7a';
     ctx.fillRect(2,i*row,width,1);
+    if(j<0)break;
+    pos=j+1;
   }
+}
+function paintMinimapViewport(){
+  const {mini,canvas,dpr,w,h,size}=miniGeometry();
+  if(mini.classList.contains('hidden')||document.body.classList.contains('mod-no-minimap'))return;
+  if(!miniBase||miniSize!==size||canvas.width!==Math.floor(w*dpr)||canvas.height!==Math.floor(h*dpr)){
+    paintMinimap();return;
+  }
+  const ctx=canvas.getContext('2d');
+  if(!ctx)return;
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(miniBase,0,0);
   const total=textEl.scrollHeight||1;
   const view=textEl.clientHeight||1;
   const vh=Math.max(4,Math.min(h,view/total*h));
   const vy=(textEl.scrollTop/total)*h;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
   ctx.fillStyle='rgba(255,255,255,.18)';ctx.fillRect(0,vy,w,vh);
+}
+function paintMinimap(){
+  const {mini,canvas,dpr,w,h,size}=miniGeometry();
+  if(mini.classList.contains('hidden')||document.body.classList.contains('mod-no-minimap'))return;
+  if(canvas.width!==Math.floor(w*dpr)||canvas.height!==Math.floor(h*dpr)){
+    canvas.width=Math.floor(w*dpr);canvas.height=Math.floor(h*dpr);
+    miniDirty=true;
+  }
+  if(miniDirty||!miniBase||miniSize!==size){
+    buildMiniBase(w,h,dpr);miniSize=size;miniDirty=false;
+  }
+  paintMinimapViewport();
+}
+function drawMinimap(){
+  const {mini}=miniGeometry();
+  if(mini.classList.contains('hidden')||document.body.classList.contains('mod-no-minimap'))return;
+  miniDirty=true;
+  paintMinimap();
+}
+function scheduleMinimap(){
+  if(miniFrame)return;
+  miniFrame=requestAnimationFrame(()=>{miniFrame=0;paintMinimap();});
+}
+function scheduleMiniViewport(){
+  if(miniFrame)return;
+  miniFrame=requestAnimationFrame(()=>{miniFrame=0;paintMinimapViewport();});
 }
 let miniDrag=false;
 function miniScroll(e){
@@ -1430,13 +1517,17 @@ function miniScroll(e){
   const frac=Math.max(0,Math.min(1,(e.clientY-r.top)/r.height));
   textEl.scrollTop=frac*(textEl.scrollHeight-textEl.clientHeight);
   textEl.selectionStart=textEl.selectionEnd=Math.round(frac*textEl.value.length);
-  updatePos();
+  schedulePos();
 }
 function updatePos(){
   const p=textEl.selectionStart||0;
   const before=textEl.value.slice(0,p);
   const lines=before.split('\n');
   $('pos').textContent=t('ln')+' '+lines.length+', '+t('col')+' '+(lines[lines.length-1].length+1);
+}
+function schedulePos(){
+  if(posTimer)return;
+  posTimer=setTimeout(()=>{posTimer=null;updatePos();},100);
 }
 function updateCount(){$('count').textContent=notes.length+' '+t(notes.length===1?'note':'notes');}
 
@@ -1974,7 +2065,11 @@ function showEditor(show){
   $('minimap').classList.toggle('hidden',!show);
   $('welcome').classList.toggle('hidden',show);
   $('tab').classList.toggle('hidden',!show||selected===null);
-  if(show)refreshHighlight();
+  if(show){
+    miniDirty=true;
+    if(textEl.value.length<=HIGHLIGHT_LIMIT)refreshHighlight();
+    else{$('highlight').classList.add('hidden');scheduleMinimap();}
+  }
 }
 function select(id,noFocus){
   if(selected===id&&!textEl.classList.contains('hidden'))return;
@@ -1989,8 +2084,7 @@ function select(id,noFocus){
   crumbForView(currentView);
   showEditor(true);
   $('saved').textContent=''; $('tabDirty').classList.add('hidden');
-  lineNumbers(); updatePos(); markSelected(); renderFolderTree();
-  if(window.nm_report)nm_report('lang '+activeLang()+' tokens '+($('highlight').innerHTML.match(/tok-/g)||[]).length);
+  lineNumbers(); updatePos(); markSelected();
   if(!noFocus){textEl.focus();textEl.setSelectionRange(0,0);}
 }
 function closeEditor(){
@@ -1998,8 +2092,8 @@ function closeEditor(){
 }
 function setDirty(){
   $('saved').textContent=t('unsaved'); $('tabDirty').classList.remove('hidden');
-  lineNumbers(); updatePos(); drawMinimap(); scheduleHighlight();
-  clearTimeout(saveTimer); saveTimer=setTimeout(()=>save(true),900);
+  scheduleLineNumbers(); schedulePos(); miniDirty=true; scheduleMiniViewport(); scheduleHighlight();
+  clearTimeout(saveTimer); saveTimer=setTimeout(()=>save(true),1500);
 }
 function flushSave(reselect){
   if(saveTimer){clearTimeout(saveTimer);saveTimer=null;if(selected!==null)save(true,reselect!==false);}
@@ -2010,14 +2104,15 @@ async function save(silent,reselect){
   const text=textEl.value, keep=selected;
   const n=notes.find(x=>keyOf(x)===keep);
   const name=noteName(n), folder=noteFolder(n);
+  if(n&&n.text===text){
+    $('tabDirty').classList.add('hidden');$('saved').textContent=t('saved');
+    return;
+  }
   try{
     await nm_update_file(String(keep),name,folder,text);
     if(n){n.text=text;n.name=name;n.folder=folder;}
-    $('tabName').textContent=name;
-    crumbForView(currentView);
     const preview=listEl.querySelector('.row[data-id="'+keep+'"] .s');
     if(preview)preview.textContent=String(text||'').replace(/\s+/g,' ').trim();
-    renderFolderTree();
     $('tabDirty').classList.add('hidden');
     $('saved').textContent=t('saved');
     if(!silent)message(t('savedMsg'));
@@ -2105,11 +2200,11 @@ $('sortBtn').onclick=()=>{
 };
 searchEl.oninput=render;
 textEl.oninput=setDirty;
-textEl.onclick=updatePos; textEl.onkeyup=updatePos; textEl.onselect=updatePos;
+textEl.onclick=updatePos; textEl.onkeyup=schedulePos; textEl.onselect=schedulePos;
 textEl.onscroll=()=>{
   $('gutter').scrollTop=textEl.scrollTop;
   const pre=$('highlight');pre.scrollTop=textEl.scrollTop;pre.scrollLeft=textEl.scrollLeft;
-  drawMinimap();
+  scheduleMiniViewport();
 };
 $('langMode').onchange=()=>{
   const v=$('langMode').value;
@@ -2123,7 +2218,7 @@ $('langMode').onchange=()=>{
 $('minimap').onmousedown=e=>{e.preventDefault();miniDrag=true;miniScroll(e);};
 document.onmousemove=e=>{if(miniDrag)miniScroll(e);};
 document.onmouseup=()=>{miniDrag=false;};
-window.onresize=drawMinimap;
+window.onresize=()=>{miniDirty=true;scheduleMinimap();};
 $('actFiles').onclick=()=>{switchView('files');listEl.focus();};
 $('actSearch').onclick=()=>{
   if(currentView==='folders'){$('folderFilter').focus();return;}
@@ -2131,6 +2226,12 @@ $('actSearch').onclick=()=>{
   searchEl.focus();
 };
 $('actFolder').onclick=async()=>{try{await nm_open_folder();}catch(e){fail(e);}};
+$('winMin').onclick=()=>{if(window.nm_minimize)nm_minimize().catch(()=>{});};
+$('winClose').onclick=()=>{if(window.nm_close)nm_close().catch(()=>{});};
+$('winLight').onclick=async()=>{
+  if(!window.nm_lightning)return;
+  try{await nm_lightning(!lightMode);}catch(e){fail(e);}
+};
 $('confNo').onclick=closeConfirm;
 $('confYes').onclick=async()=>{const f=confirmAction;closeConfirm();if(f)await f();};
 $('palInput').oninput=()=>{palIndex=0;renderPalette();};
@@ -2214,6 +2315,9 @@ async function boot(){
   try{
     if(typeof nm_boot==='function'){
       const cfg=JSON.parse(await nm_boot());
+      lightMode=!!(cfg&&cfg.light);
+      document.body.classList.toggle('light-mode',lightMode);
+      $('winLight').dataset.i18nTitle=lightMode?'exitLightMode':'lightMode';
       if(!localStorage.getItem('nm_locale')&&cfg&&SUPPORTED_LOCALES.includes(cfg.locale)){
         uiLocale=cfg.locale;localStorage.setItem('nm_locale',uiLocale);
       }

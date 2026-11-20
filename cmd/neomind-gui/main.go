@@ -15,6 +15,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/narkomaniya/neomind/internal/core"
 	"github.com/narkomaniya/neomind/internal/languages"
@@ -61,13 +62,14 @@ type bootFolder struct {
 type bootConfig struct {
 	Locale  string       `json:"locale"`
 	Folders []bootFolder `json:"folders"`
+	Light   bool         `json:"light"`
 }
 
 // readBootConfig reads one-shot installer choices: the preset UI language and
 // the starter project folders selected in the setup wizard. The locale file is
 // consumed so a later in-app language change is never overwritten.
 func readBootConfig() string {
-	cfg := bootConfig{Folders: []bootFolder{}}
+	cfg := bootConfig{Folders: []bootFolder{}, Light: os.Getenv("NEOMIND_LIGHT") == "1"}
 	dir := core.DataDir()
 	if dir != "" {
 		localeFile := filepath.Join(dir, "locale")
@@ -135,6 +137,46 @@ func bindAll(w webview.WebView) {
 
 	bind(w, "nm_boot", func() (string, error) {
 		return readBootConfig(), nil
+	})
+
+	bind(w, "nm_minimize", func() (string, error) {
+		minimizeWindow(w)
+		return "ok", nil
+	})
+
+	bind(w, "nm_close", func() (string, error) {
+		go func() {
+			time.Sleep(60 * time.Millisecond)
+			w.Terminate()
+		}()
+		return "ok", nil
+	})
+
+	bind(w, "nm_lightning", func(enable bool) (string, error) {
+		exe, err := os.Executable()
+		if err != nil {
+			return "", err
+		}
+		cmd := exec.Command(exe)
+		cmd.Dir = filepath.Dir(exe)
+		env := make([]string, 0, len(os.Environ())+1)
+		for _, item := range os.Environ() {
+			if !strings.HasPrefix(item, "NEOMIND_LIGHT=") {
+				env = append(env, item)
+			}
+		}
+		if enable {
+			env = append(env, "NEOMIND_LIGHT=1")
+		}
+		cmd.Env = env
+		if err := cmd.Start(); err != nil {
+			return "", err
+		}
+		go func() {
+			time.Sleep(120 * time.Millisecond)
+			w.Terminate()
+		}()
+		return "ok", nil
 	})
 
 	bind(w, "nm_update", func(id, text string) (string, error) {
