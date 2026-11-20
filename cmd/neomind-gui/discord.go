@@ -36,6 +36,10 @@ type discordClient struct {
 
 var discord = &discordClient{update: make(chan struct{}, 1)}
 
+// Discord accepts a direct image URL as an activity asset, so the NeoMind icon
+// works even before a custom asset is uploaded to the Developer Portal.
+const discordDefaultAsset = "https://raw.githubusercontent.com/narkomaniya/neomind/main/assets/neomind-discord.png"
+
 type discordConfig struct {
 	ClientID string `json:"client_id"`
 	Asset    string `json:"asset"`
@@ -66,7 +70,7 @@ func discordLoad() {
 	discord.clientID = strings.TrimSpace(cfg.ClientID)
 	discord.asset = strings.TrimSpace(cfg.Asset)
 	if discord.asset == "" {
-		discord.asset = "neomind_icon"
+		discord.asset = discordDefaultAsset
 	}
 	discord.mu.Unlock()
 	discord.signal()
@@ -83,7 +87,7 @@ func discordSave(clientID, asset string) error {
 		return fmt.Errorf("invalid Discord client id")
 	}
 	if asset == "" {
-		asset = "neomind_icon"
+		asset = discordDefaultAsset
 	}
 	b, err := json.Marshal(discordConfig{ClientID: clientID, Asset: asset})
 	if err != nil {
@@ -176,13 +180,13 @@ func discordDial() (io.ReadWriteCloser, error) {
 }
 
 func writeDiscordFrame(w io.Writer, op uint32, payload []byte) error {
-	header := make([]byte, 8)
-	binary.LittleEndian.PutUint32(header[:4], op)
-	binary.LittleEndian.PutUint32(header[4:], uint32(len(payload)))
-	if _, err := w.Write(header); err != nil {
-		return err
-	}
-	_, err := w.Write(payload)
+	// Discord's named pipe is message-oriented on Windows: header and body must
+	// go out as one write, otherwise the peer sees two broken frames.
+	frame := make([]byte, 8+len(payload))
+	binary.LittleEndian.PutUint32(frame[:4], op)
+	binary.LittleEndian.PutUint32(frame[4:], uint32(len(payload)))
+	copy(frame[8:], payload)
+	_, err := w.Write(frame)
 	return err
 }
 
@@ -248,10 +252,11 @@ func discordHandshake(conn io.ReadWriteCloser, clientID string) error {
 
 func (d *discordClient) push() {
 	d.mu.Lock()
-	defer d.mu.Unlock()
 	if d.conn == nil || d.clientID == "" {
+		d.mu.Unlock()
 		return
 	}
+	conn := d.conn
 	details := d.project
 	if details == "" {
 		details = "NeoMind"
@@ -290,12 +295,20 @@ func (d *discordClient) push() {
 	}
 	b, err := json.Marshal(req)
 	if err != nil {
+		d.mu.Unlock()
 		return
 	}
-	if err := writeDiscordFrame(d.conn, 1, b); err != nil {
-		_ = d.conn.Close()
-		d.conn = nil
-		d.connected = false
+	d.mu.Unlock()
+	// Never hold the state lock across a pipe write: a stalled Discord pipe
+	// must not freeze the whole UI or the other bindings.
+	if err := writeDiscordFrame(conn, 1, b); err != nil {
+		_ = conn.Close()
+		d.mu.Lock()
+		if d.conn == conn {
+			d.conn = nil
+			d.connected = false
+		}
+		d.mu.Unlock()
 	}
 }
 
