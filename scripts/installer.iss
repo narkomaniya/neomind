@@ -1,5 +1,5 @@
 ﻿#define MyAppName "NeoMind"
-#define MyAppVersion "0.5.5"
+#define MyAppVersion "0.5.6"
 #define MyAppPublisher "narkomaniya"
 #define MyAppURL "https://github.com/narkomaniya/neomind"
 #define MyAppExeName "neomind-gui.exe"
@@ -34,7 +34,7 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0.17763
 CloseApplications=yes
-VersionInfoVersion=0.5.5.0
+VersionInfoVersion=0.5.6.0
 VersionInfoCompany={#MyAppPublisher}
 VersionInfoDescription={#MyAppName} installer
 VersionInfoProductName={#MyAppName}

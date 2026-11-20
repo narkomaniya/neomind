@@ -642,6 +642,7 @@
           <option value="bash">Shell</option>
         </select></span>
         <span class="item">UTF-8</span>
+        <span class="item hidden" id="updateItem" style="cursor:pointer;color:var(--bright)"></span>
         <span class="item" id="saved"></span>
       </div>
     </div>
@@ -1285,6 +1286,17 @@ const GH_I18N={
  ja:{github:'GitHub アクティビティ',githubTitle:'GitHub アクティビティ',githubHint:'GitHub でログインすると、最近のコミットと NeoMind でのコーディング時間を確認できます。',githubSignIn:'GitHub でログイン',githubCode:'ワンタイムコード',githubOpen:'GitHub を開く',githubPending:'認証を待機中...',githubHours:'NeoMind でのコーディング時間',githubCommits:'最近のコミット',githubNoCommits:'コミットが見つかりません',githubRefresh:'更新',githubSignOut:'ログアウト',githubError:'GitHub データを読み込めませんでした',githubDone:'ログイン中',githubRepo:'リポジトリ',githubDate:'日付',githubCommit:'コミット',githubExpire:'コードの有効期限が切れました。再度ログインしてください。',githubCoding:'{hours} 時間 {minutes} 分'}
 };
 for(const loc of Object.keys(GH_I18N))Object.assign(I18N[loc],GH_I18N[loc]);
+const UPDATE_I18N={
+ en:{updateAvailable:'Update {version} available — click to install',updateInstalling:'Installing update…',updateError:'Update failed'},
+ ru:{updateAvailable:'Доступно обновление {version} — нажмите для установки',updateInstalling:'Установка обновления…',updateError:'Не удалось обновить'},
+ uk:{updateAvailable:'Доступне оновлення {version} — натисніть для встановлення',updateInstalling:'Встановлення оновлення…',updateError:'Не вдалося оновити'},
+ es:{updateAvailable:'Actualización {version} disponible — haga clic para instalar',updateInstalling:'Instalando actualización…',updateError:'Error al actualizar'},
+ de:{updateAvailable:'Update {version} verfügbar — zum Installieren klicken',updateInstalling:'Update wird installiert…',updateError:'Update fehlgeschlagen'},
+ fr:{updateAvailable:'Mise à jour {version} disponible — cliquez pour installer',updateInstalling:'Installation de la mise à jour…',updateError:'Échec de la mise à jour'},
+ zh:{updateAvailable:'有可用更新 {version} — 点击安装',updateInstalling:'正在安装更新…',updateError:'更新失败'},
+ ja:{updateAvailable:'更新 {version} があります — クリックしてインストール',updateInstalling:'更新をインストール中…',updateError:'更新に失敗しました'}
+};
+for(const loc of Object.keys(UPDATE_I18N))Object.assign(I18N[loc],UPDATE_I18N[loc]);
 let uiLocale=localStorage.getItem('nm_locale')||'en';
 if(!SUPPORTED_LOCALES.includes(uiLocale))uiLocale='en';
 function t(key,vars){
@@ -2675,6 +2687,27 @@ $('githubSign').onclick=githubStart;
 $('githubRefresh').onclick=async()=>{trackCoding();await renderGithub();};
 $('githubSignOut').onclick=async()=>{try{await nm_github_signout();await renderGithub();}catch(e){fail(e);}};
 
+let updateInfo=null;
+async function checkAppUpdate(){
+  if(lightMode||!window.nm_app_update_check)return;
+  try{
+    const info=JSON.parse(await nm_app_update_check());
+    if(info.available){
+      updateInfo=info;
+      $('updateItem').classList.remove('hidden');
+      $('updateItem').textContent=t('updateAvailable',{version:info.version});
+    }
+  }catch(e){}
+}
+$('updateItem').onclick=async()=>{
+  if(!updateInfo)return;
+  $('updateItem').textContent=t('updateInstalling');
+  try{
+    await nm_app_update_apply(updateInfo.url,updateInfo.sha,updateInfo.version);
+    await nm_close();
+  }catch(e){$('updateItem').textContent=t('updateError');fail(e);}
+};
+
 async function boot(){
   try{
     if(typeof nm_boot==='function'){
@@ -2700,6 +2733,7 @@ async function boot(){
   }catch(e){}
   const sel=$('uiLang');if(sel)sel.value=uiLocale;
   applyModClasses(); applyI18n(); load(); loadStatus(); discordPush();
+  setTimeout(checkAppUpdate,4000); setInterval(checkAppUpdate,30*60*1000);
 }
 boot();
 </script>

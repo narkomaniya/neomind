@@ -168,6 +168,11 @@ func bindAll(w webview.WebView) {
 		return "ok", nil
 	})
 
+	bind(w, "nm_app_update_check", func() (string, error) { return appUpdateCheck() })
+	bind(w, "nm_app_update_apply", func(downloadURL, shaURL, version string) (string, error) {
+		return appUpdateApply(downloadURL, shaURL, version)
+	})
+
 	bind(w, "nm_github_status", func() (string, error) { return githubStatus(), nil })
 	bind(w, "nm_github_device_start", func() (string, error) { return githubDeviceStart() })
 	bind(w, "nm_github_device_poll", func() (string, error) { return githubDevicePoll() })
@@ -301,6 +306,10 @@ func bindAll(w webview.WebView) {
 }
 
 func main() {
+	if len(os.Args) >= 4 && os.Args[1] == "--neomind-update" {
+		runAppUpdater(os.Args[2], os.Args[3], "")
+		return
+	}
 	html, err := uiFS.ReadFile("ui/index.html")
 	if err != nil {
 		log.Fatal(err)
