@@ -1,0 +1,15 @@
+[package]
+name = "neomind-core"
+version = "0.1.0"
+edition = "2021"
+description = "Rust core for NeoMind: storage and JSON responses"
+
+[lib]
+name = "neomind_core"
+path = "src/lib.rs"
+
+[[bin]]
+name = "neomind-core"
+path = "src/main.rs"
+
+[dependencies]

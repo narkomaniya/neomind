@@ -1,0 +1,51 @@
+name: ci
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            script: sh scripts/build.sh
+            bin: neomind
+            rust: stable
+          - os: macos-latest
+            script: sh scripts/build.sh
+            bin: neomind
+            rust: stable
+          - os: windows-latest
+            script: powershell -NoProfile -File scripts/build.ps1
+            bin: neomind.exe
+            rust: stable
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache: false
+      - name: Build
+        shell: bash
+        run: ${{ matrix.script }}
+      - name: Smoke test
+        shell: bash
+        run: |
+          ls -l dist
+          ./dist/${{ matrix.bin }} version
+          ./dist/${{ matrix.bin }} note add "ci smoke"
+          ./dist/${{ matrix.bin }} note list
+          ./dist/${{ matrix.bin }} doctor
+      - uses: actions/upload-artifact@v4
+        with:
+          name: neomind-${{ matrix.os }}
+          path: dist/

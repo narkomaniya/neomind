@@ -1,0 +1,13 @@
+# Rust
+rust/target/
+
+# Go
+/dist/
+*.exe
+*.test
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
