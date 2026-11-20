@@ -15,7 +15,7 @@ import (
 	"github.com/narkomaniya/neomind/internal/core"
 )
 
-const cliVersion = "0.2.0"
+const cliVersion = "0.3.0"
 
 var noColor = os.Getenv("NO_COLOR") != "" || os.Getenv("TERM") == "dumb"
 

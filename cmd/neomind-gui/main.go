@@ -15,11 +15,14 @@ import (
 	"strconv"
 
 	"github.com/narkomaniya/neomind/internal/core"
+	"github.com/narkomaniya/neomind/internal/languages"
 	"github.com/webview/webview_go"
 )
 
 //go:embed ui/index.html
 var uiFS embed.FS
+
+var langManager = languages.NewManager()
 
 func bind(w webview.WebView, name string, f interface{}) {
 	if err := w.Bind(name, f); err != nil {
@@ -90,6 +93,29 @@ func bindAll(w webview.WebView) {
 			return "", err
 		}
 		return "ok", nil
+	})
+
+	bind(w, "nm_languages", func() (string, error) {
+		return languages.JSON(), nil
+	})
+
+	bind(w, "nm_install_languages", func(idsJSON string) (string, error) {
+		var ids []string
+		if err := json.Unmarshal([]byte(idsJSON), &ids); err != nil {
+			return "", err
+		}
+		if len(ids) == 0 {
+			return "", fmt.Errorf("no languages selected")
+		}
+		return langManager.Start(ids), nil
+	})
+
+	bind(w, "nm_install_progress", func(jobID string) (string, error) {
+		job, ok := langManager.Progress(jobID)
+		if !ok {
+			return "", fmt.Errorf("unknown install job: %s", jobID)
+		}
+		return job.JSON(), nil
 	})
 }
 

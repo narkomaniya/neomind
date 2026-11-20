@@ -2,11 +2,11 @@
 
 A small, fast note keeper built as **Rust core + Go CLI + native desktop GUI**.
 
-Version **0.2.0** ships three binaries: a Rust core with all storage logic, a Go
+Version **0.3.0** ships three binaries: a Rust core with all storage logic, a Go
 CLI for scripts and diagnostics, and a Go/WebView desktop window with a proper
-interface. The CLI and GUI never link against Rust directly — they call
-`neomind-core <op> [args...]`, which answers with one JSON line. This keeps the
-build portable.
+interface and a built-in language/toolchain installer. The CLI and GUI never
+link against Rust directly — they call `neomind-core <op> [args...]`, which
+answers with one JSON line. This keeps the build portable.
 
 ## What you get
 
@@ -60,6 +60,10 @@ colours, just greys and 1px borders.
 - **Ctrl+P** quick-open palette, **Ctrl+F** filter, **Ctrl+N** new note, **Ctrl+D** delete
 - arrow-key navigation in the list, Enter to focus the editor
 - in-app confirmation dialog instead of the native OS prompt
+- **Languages** view (second activity-bar icon): a catalogue of Go, Rust, Python,
+  Node.js, Java, C/C++ (MinGW), .NET, Ruby, PHP and Perl with installed status,
+  multi-select and **install-all / install-selected** in one background job
+  (winget on Windows) with live progress and a log
 
 Notes live in `~/.neomind/notes.txt` (`%USERPROFILE%\.neomind\notes.txt`) as
 `id<TAB>escaped text` lines — easy to back up. `NEOMIND_DATA_DIR` redirects the

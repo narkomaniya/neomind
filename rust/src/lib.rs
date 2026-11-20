@@ -8,7 +8,7 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-pub const VERSION: &str = "0.2.0";
+pub const VERSION: &str = "0.3.0";
 
 /// Папка данных: %USERPROFILE%/.neomind на Windows, ~/.neomind на POSIX.
 /// NEOMIND_DATA_DIR позволяет перенаправить хранилище (тесты, портативный режим).
@@ -258,6 +258,6 @@ mod tests {
     fn status_is_jsonish() {
         let s = status_json();
         assert!(s.contains("\"core\":\"rust\""));
-        assert!(s.contains("\"version\":\"0.2.0\""));
+        assert!(s.contains("\"version\":\"0.3.0\""));
     }
 }
