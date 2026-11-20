@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "notes": "Reference keymap you can adapt in your own editor.",
+  "bindings": {
+    "ctrl+n": "new file",
+    "ctrl+s": "save",
+    "ctrl+f": "find",
+    "ctrl+shift+p": "command palette",
+    "alt+up": "move line up",
+    "alt+down": "move line down",
+    "ctrl+/": "toggle comment"
+  }
+}

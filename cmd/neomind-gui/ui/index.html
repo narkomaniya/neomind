@@ -1841,8 +1841,11 @@ function folderNodes(){
   if(!Array.isArray(folders))folders=[];
   folders.forEach(f=>{
     const name=String(f&&f.name||'').trim(); if(!name)return;
-    const node={id:'int:'+(f.id||name),label:name,folder:name,files:[],children:[]};
+    const path=String(f&&f.path||'').trim();
+    const disk=path&&isAbsFolder(path);
+    const node={id:(disk?'disk:':'int:')+(disk?path:(f.id||name)),label:name,folder:disk?path:name,files:[],children:[]};
     map.set(name,node);
+    if(disk)map.set(path,node);
   });
   folders.forEach(f=>{
     const name=String(f&&f.name||'').trim(); const node=map.get(name); if(!node)return;
@@ -2207,7 +2210,30 @@ document.onkeydown=e=>{
 if(window.nm_report){
   window.onerror=(msg,src,line,col)=>{nm_report('JS ERROR '+msg+' @'+line+':'+col);};
 }
-applyModClasses(); applyI18n(); load(); loadStatus();
+async function boot(){
+  try{
+    if(typeof nm_boot==='function'){
+      const cfg=JSON.parse(await nm_boot());
+      if(!localStorage.getItem('nm_locale')&&cfg&&SUPPORTED_LOCALES.includes(cfg.locale)){
+        uiLocale=cfg.locale;localStorage.setItem('nm_locale',uiLocale);
+      }
+      if(cfg&&Array.isArray(cfg.folders)){
+        let changed=false;
+        cfg.folders.forEach(f=>{
+          const name=String(f&&f.name||'').trim(), path=String(f&&f.path||'').trim();
+          if(!name||!path)return;
+          if(folders.some(x=>x&&String(x.path||'')===path))return;
+          folders.push({id:'preset_'+path.replace(/[^a-z0-9]+/gi,'_').toLowerCase(),name,parent:'',path});
+          changed=true;
+        });
+        if(changed)saveFolders();
+      }
+    }
+  }catch(e){}
+  const sel=$('uiLang');if(sel)sel.value=uiLocale;
+  applyModClasses(); applyI18n(); load(); loadStatus();
+}
+boot();
 </script>
 </body>
 </html>

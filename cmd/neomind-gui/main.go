@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
+	"strings"
 
 	"github.com/narkomaniya/neomind/internal/core"
 	"github.com/narkomaniya/neomind/internal/languages"
@@ -52,6 +53,48 @@ func writeDiskFile(folder, name, text string) error {
 	return os.WriteFile(filepath.Join(folder, clean), []byte(text), 0o644)
 }
 
+type bootFolder struct {
+	Name string `json:"name"`
+	Path string `json:"path"`
+}
+
+type bootConfig struct {
+	Locale  string       `json:"locale"`
+	Folders []bootFolder `json:"folders"`
+}
+
+// readBootConfig reads one-shot installer choices: the preset UI language and
+// the starter project folders selected in the setup wizard. The locale file is
+// consumed so a later in-app language change is never overwritten.
+func readBootConfig() string {
+	cfg := bootConfig{Folders: []bootFolder{}}
+	dir := core.DataDir()
+	if dir != "" {
+		localeFile := filepath.Join(dir, "locale")
+		if b, err := os.ReadFile(localeFile); err == nil {
+			cfg.Locale = strings.TrimSpace(string(b))
+			_ = os.Remove(localeFile)
+		}
+		presetDir := filepath.Join(dir, "presets")
+		entries, _ := os.ReadDir(presetDir)
+		for _, e := range entries {
+			if e.IsDir() || !strings.HasSuffix(strings.ToLower(e.Name()), ".json") {
+				continue
+			}
+			b, err := os.ReadFile(filepath.Join(presetDir, e.Name()))
+			if err != nil {
+				continue
+			}
+			var f bootFolder
+			if err := json.Unmarshal(b, &f); err == nil && f.Name != "" && f.Path != "" {
+				cfg.Folders = append(cfg.Folders, f)
+			}
+		}
+	}
+	out, _ := json.Marshal(cfg)
+	return string(out)
+}
+
 func bindAll(w webview.WebView) {
 	bind(w, "nm_list", func() (string, error) {
 		notes, err := core.List()
@@ -88,6 +131,10 @@ func bindAll(w webview.WebView) {
 
 	bind(w, "nm_pick_folder", func(title string) (string, error) {
 		return pickFolder(title)
+	})
+
+	bind(w, "nm_boot", func() (string, error) {
+		return readBootConfig(), nil
 	})
 
 	bind(w, "nm_update", func(id, text string) (string, error) {
