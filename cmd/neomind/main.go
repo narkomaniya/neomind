@@ -191,10 +191,10 @@ func openGUI() int {
 		die(fmt.Errorf("GUI binary not found: %s (run scripts/build.*)", path))
 	}
 	cmd := exec.Command(path)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
+	cmd.SysProcAttr = guiSysProcAttr()
+	// The GUI is a windowed app: do not attach it to the calling terminal and
+	// do not block the CLI process while the window is open.
+	if err := cmd.Start(); err != nil {
 		die(err)
 	}
 	return 0

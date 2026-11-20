@@ -1069,9 +1069,15 @@ window.onerror=function(m){message('JS: '+m);};
 async function load(){
   try{
     notes=JSON.parse(await nm_list());
+    pruneLangOverrides();
     render(); updateCount();
     if(window.nm_report) nm_report('loaded '+notes.length);
   }catch(e){fail(e);}
+}
+function pruneLangOverrides(){
+  const live=new Set(notes.map(n=>String(keyOf(n))));
+  Object.keys(localStorage).filter(k=>k.indexOf('nm_lang_')===0)
+    .forEach(k=>{if(!live.has(k.slice(8)))localStorage.removeItem(k);});
 }
 async function loadStatus(){
   try{

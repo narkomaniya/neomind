@@ -62,7 +62,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'go build failed' }
 
     Write-Host '==> building desktop GUI'
-    & go build -trimpath -o (Join-Path $dist 'neomind-gui.exe') .\cmd\neomind-gui
+    & go build -trimpath -ldflags '-H=windowsgui' -o (Join-Path $dist 'neomind-gui.exe') .\cmd\neomind-gui
     if ($LASTEXITCODE -ne 0) { throw 'GUI build failed' }
 
     Copy-Item -Force (Join-Path $root 'rust\target\release\neomind-core.exe') (Join-Path $dist 'neomind-core.exe')
