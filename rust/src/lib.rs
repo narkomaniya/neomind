@@ -8,7 +8,7 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-pub const VERSION: &str = "0.3.0";
+pub const VERSION: &str = "0.4.0";
 
 /// Data folder: %USERPROFILE%/.neomind on Windows, ~/.neomind on POSIX.
 /// NEOMIND_DATA_DIR redirects storage (tests, portable mode).
@@ -258,6 +258,6 @@ mod tests {
     fn status_is_jsonish() {
         let s = status_json();
         assert!(s.contains("\"core\":\"rust\""));
-        assert!(s.contains("\"version\":\"0.3.0\""));
+        assert!(s.contains("\"version\":\"0.4.0\""));
     }
 }

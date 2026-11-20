@@ -16,6 +16,7 @@ import (
 
 	"github.com/narkomaniya/neomind/internal/core"
 	"github.com/narkomaniya/neomind/internal/languages"
+	"github.com/narkomaniya/neomind/internal/mods"
 	"github.com/webview/webview_go"
 )
 
@@ -116,6 +117,17 @@ func bindAll(w webview.WebView) {
 			return "", fmt.Errorf("unknown install job: %s", jobID)
 		}
 		return job.JSON(), nil
+	})
+
+	bind(w, "nm_mods", func() (string, error) {
+		return mods.JSON(), nil
+	})
+
+	bind(w, "nm_mods_open", func(rawURL string) (string, error) {
+		if err := mods.Open(rawURL); err != nil {
+			return "", err
+		}
+		return "ok", nil
 	})
 }
 

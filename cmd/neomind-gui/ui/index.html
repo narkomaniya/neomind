@@ -169,6 +169,84 @@
   .lp-log{max-height:68px;overflow-y:auto;margin-top:6px;font:10px/1.6 Consolas,monospace;color:var(--dim)}
   .lang-empty{padding:24px;color:var(--dim);font-size:12px;text-align:center}
 
+  /* mods */
+  .modsview{flex:1;display:flex;flex-direction:column;min-height:0;padding:18px 24px 16px}
+  .mods-section-title{
+    font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--dim);
+    margin:0 0 8px;flex:none;
+  }
+  .mods-tweaks{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(214px,1fr));
+    gap:8px;margin-bottom:16px;flex:none;
+  }
+  .tweak{
+    border:1px solid var(--border);background:var(--panel);padding:9px 11px;
+    display:flex;align-items:center;gap:10px;cursor:pointer;
+  }
+  .tweak:hover{border-color:var(--muted)}
+  .tweak.on{border-color:var(--bright)}
+  .tweak .tw-body{flex:1;min-width:0}
+  .tweak .tw-name{font-size:12px;color:var(--bright)}
+  .tweak .tw-desc{font-size:10px;color:var(--dim);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .toggle{width:32px;height:16px;border:1px solid var(--muted);border-radius:9px;position:relative;flex:none}
+  .toggle::after{
+    content:'';position:absolute;top:2px;left:2px;width:10px;height:10px;
+    border-radius:50%;background:var(--muted);transition:left .12s,background .12s;
+  }
+  .tweak.on .toggle{background:var(--bright);border-color:var(--bright)}
+  .tweak.on .toggle::after{left:17px;background:#000}
+  .mods-grid{
+    flex:1;min-height:0;overflow-y:auto;display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:8px;align-content:start;
+  }
+  .mod-card{border:1px solid var(--border);background:var(--panel);padding:10px 12px;min-width:0}
+  .mod-card:hover{border-color:var(--muted)}
+  .mod-head{display:flex;align-items:center;gap:10px;min-width:0}
+  .mod-avatar{
+    width:30px;height:30px;flex:none;border:1px solid var(--border);border-radius:2px;
+    object-fit:cover;background:var(--editor);filter:grayscale(1);
+  }
+  .mod-fallback{
+    width:30px;height:30px;flex:none;border:1px solid var(--border);border-radius:2px;
+    display:grid;place-items:center;font-size:12px;color:var(--bright);background:var(--editor);
+  }
+  .mod-title{flex:1;min-width:0}
+  .mod-title .mn{font-size:12px;color:var(--bright);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mod-title .ma{font-size:10px;color:var(--dim);margin-top:2px}
+  .mod-badge{
+    font-size:9px;letter-spacing:.6px;color:var(--bright);border:1px solid var(--muted);
+    padding:2px 5px;flex:none;
+  }
+  .mod-desc{font-size:11px;color:var(--muted);line-height:1.45;margin:9px 0}
+  .mod-meta{display:flex;gap:10px;flex-wrap:wrap;font-size:10px;color:var(--dim)}
+  .mod-links{display:flex;gap:6px;margin-top:10px}
+  .mod-links button{
+    border:1px solid var(--border);padding:4px 8px;font-size:10px;color:var(--muted);border-radius:2px;
+  }
+  .mod-links button:hover{background:var(--hover);color:var(--bright);border-color:var(--muted)}
+  .mods-exit{
+    position:fixed;top:8px;right:8px;z-index:30;background:var(--panel);
+    border:1px solid var(--muted);color:var(--bright);padding:5px 10px;font-size:11px;
+  }
+  .mods-exit:hover{background:var(--hover)}
+
+  /* cosmetic mods, all grayscale */
+  body.mod-compact .row{padding:4px 14px 4px 18px;min-height:30px}
+  body.mod-compact .langrow{padding:5px 14px 5px 18px}
+  body.mod-compact .lang-card{padding:7px 10px}
+  body.mod-compact .mod-card{padding:7px 10px}
+  body.mod-no-line .gutter{display:none}
+  body.mod-no-line textarea{padding-left:26px}
+  body.mod-wide .sidebar{width:380px!important}
+  body.mod-mono,body.mod-mono input,body.mod-mono button{
+    font-family:Consolas,"Cascadia Mono",monospace;
+  }
+  body.mod-contrast{
+    --muted:#aaa;--dim:#888;--text:#ffffff;--border:#4a4a4a;--border-soft:#373737;
+  }
+  body.mod-hide-status .status{display:none}
+  body.mod-focus .activity,body.mod-focus .sidebar,body.mod-focus .splitter{display:none}
+
   /* main */
   .main{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--editor)}
   .tabs{height:35px;flex:none;display:flex;align-items:stretch;background:var(--panel);
@@ -244,6 +322,7 @@
     <button class="act on" id="actFiles" title="Explorer"><svg viewBox="0 0 24 24"><path d="M4 4h6l2 2h8v12H4z"/></svg></button>
     <button class="act" id="actSearch" title="Search (Ctrl+F)"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l5 5"/></svg></button>
     <button class="act" id="actLangs" title="Languages &amp; toolchains"><svg viewBox="0 0 24 24"><path d="M4 7l8-4 8 4-8 4-8-4z"/><path d="M4 7v10l8 4 8-4V7"/><path d="M12 11v8"/><path d="M9 16l3 3 3-3"/></svg></button>
+    <button class="act" id="actMods" title="Mods &amp; themes"><svg viewBox="0 0 24 24"><path d="M10 4h5v3a2 2 0 1 0 4 0V4h1v6h-3a2 2 0 1 0 0 4h3v6h-6v-3a2 2 0 1 0-4 0v3H4v-6h3a2 2 0 1 0 0-4H4V4z"/></svg></button>
     <button class="act bottom" id="actFolder" title="Open data folder"><svg viewBox="0 0 24 24"><path d="M4 6h6l2 2h8v10H4z"/></svg></button>
   </div>
 
@@ -280,6 +359,21 @@
         <button class="link" id="langSelNone">Clear selection</button>
       </div>
     </div>
+
+    <div class="view-col hidden" id="sideMods">
+      <div class="side-title">
+        <span>Mods</span>
+        <div class="side-actions">
+          <button class="mini" id="modsRefreshSide" title="Refresh"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2 6"/><path d="M20 5v6h-6"/></svg></button>
+        </div>
+      </div>
+      <label class="searchbox lang-filter">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l5 5"/></svg>
+        <input id="modsSearch" placeholder="Filter mods" spellcheck="false">
+      </label>
+      <div class="lang-list" id="modsList"></div>
+      <div class="lang-foot"><span>Cosmetic only · no code execution</span></div>
+    </div>
   </aside>
   <div class="splitter" id="splitter"></div>
 
@@ -291,6 +385,7 @@
         <button class="x" id="tabClose" title="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
       <div class="tab hidden" id="langTab"><span class="name">Languages &amp; toolchains</span></div>
+      <div class="tab hidden" id="modsTab"><span class="name">Mods &amp; themes</span></div>
       <div class="spacer"></div>
       <button class="new" id="newTop" title="New note (Ctrl+N)"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
     </div>
@@ -320,6 +415,27 @@
         <div class="lp-current" id="lpCurrent"></div>
         <div class="lp-log" id="lpLog"></div>
       </div>
+    </div>
+
+    <div class="modsview hidden" id="modsView">
+      <div class="lang-head">
+        <div>
+          <h2>Mods &amp; themes</h2>
+          <p>Curated cosmetic mods · VS Code sources and author icons · nothing is installed into NeoMind</p>
+        </div>
+        <div class="lang-actions">
+          <button class="btn" id="modsRefresh">Refresh</button>
+        </div>
+      </div>
+      <div class="lang-stats">
+        <span>Curated: <b id="modsTotal">0</b></span>
+        <span>Safe: <b id="modsSafe">0</b></span>
+        <span>Applied tweaks: <b id="modsApplied">0</b></span>
+      </div>
+      <div class="mods-section-title">NeoMind tweaks · applied locally</div>
+      <div class="mods-tweaks" id="modsTweaks"></div>
+      <div class="mods-section-title">VS Code sources · open source, cosmetic only</div>
+      <div class="mods-grid" id="modsGrid"></div>
     </div>
 
     <div class="editorwrap" id="editorwrap">
@@ -367,18 +483,31 @@
   </div>
 </div>
 
+<button class="mods-exit hidden" id="exitFocus">Exit focus mode</button>
+
 <script>
 const $ = id => document.getElementById(id);
 const listEl=$('list'), searchEl=$('search'), textEl=$('text'), langSearchEl=$('langSearch');
 let notes=[], selected=null, saveTimer=null, msgTimer=null;
 let sortMode='date-desc', palItems=[], palIndex=0, confirmAction=null;
 let langs=[], langSelected=new Set(), langJob=null, langTimer=null, langBusy=false;
+let mods=[], modsSearchEl=$('modsSearch');
+let appliedMods=new Set(JSON.parse(localStorage.getItem('nm_mods')||'[]'));
+const TWEAKS=[
+  {id:'compact', name:'Compact UI', desc:'Denser lists and cards'},
+  {id:'no-line', name:'No line numbers', desc:'Hide the editor gutter'},
+  {id:'wide', name:'Wide sidebar', desc:'Fixed 380px sidebar'},
+  {id:'mono', name:'Monospace UI', desc:'Mono font everywhere'},
+  {id:'contrast', name:'High contrast', desc:'Stronger borders and text'},
+  {id:'hide-status', name:'Hide status bar', desc:'More room for notes'},
+  {id:'focus', name:'Focus mode', desc:'Hide all chrome'},
+];
 let currentView='files';
 
 const ICON_CHECK='<svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>';
 
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function fmt(ms){try{return new Date(ms).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});}catch(e){return '';}}
+function fmt(ms){try{return new Date(ms).toLocaleString('en-US',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'});}catch(e){return '';}}
 function titleOf(t){const l=String(t||'').trim().split('\n')[0]||'Untitled';return l.length>58?l.slice(0,58)+'…':l;}
 function keyOf(n){return n.id||n.ts;}
 function timeOf(n){return n.created||(keyOf(n)>1e12?keyOf(n):keyOf(n)*1000);}
@@ -495,23 +624,101 @@ async function installLangs(ids){
     langTimer=setTimeout(pollProgress,400);
   }catch(e){fail(e);}
 }
+/* ---------- mods view ---------- */
+function applyModClasses(){
+  TWEAKS.forEach(t=>document.body.classList.toggle('mod-'+t.id,appliedMods.has(t.id)));
+  $('exitFocus').classList.toggle('hidden',!appliedMods.has('focus'));
+  $('modsApplied').textContent=appliedMods.size;
+  localStorage.setItem('nm_mods',JSON.stringify([...appliedMods]));
+}
+function toggleTweak(id){
+  if(appliedMods.has(id))appliedMods.delete(id);
+  else appliedMods.add(id);
+  applyModClasses();
+  renderMods();
+  message('Mod '+(appliedMods.has(id)?'enabled':'disabled'));
+}
+function modAvatarHTML(m){
+  const initial=esc(String(m.name||'?')[0].toUpperCase());
+  return '<img class="mod-avatar" src="'+esc(m.icon)+'" alt="" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'grid\'">'+
+    '<span class="mod-fallback" style="display:none">'+initial+'</span>';
+}
+function modRowHTML(m){
+  return '<div class="langrow">'+
+    modAvatarHTML(m)+
+    '<span class="lr-body"><span class="lr-name">'+esc(m.name)+'</span>'+
+    '<span class="lr-meta">'+esc(m.author)+' · '+esc(m.kind)+'</span></span>'+
+    '<span class="lr-flag">SAFE</span></div>';
+}
+function modCardHTML(m){
+  return '<div class="mod-card">'+
+    '<div class="mod-head">'+modAvatarHTML(m)+
+    '<span class="mod-title"><span class="mn">'+esc(m.name)+'</span>'+
+    '<span class="ma">by '+esc(m.author)+'</span></span>'+
+    '<span class="mod-badge">SAFE</span></div>'+
+    '<div class="mod-desc">'+esc(m.description)+'</div>'+
+    '<div class="mod-meta"><span>'+esc(m.kind)+'</span><span>'+esc(m.license)+'</span></div>'+
+    '<div class="mod-links">'+
+      '<button data-open="'+esc(m.source)+'">Source</button>'+
+      '<button data-open="'+esc(m.marketplace)+'">Marketplace</button>'+
+    '</div></div>';
+}
+function renderMods(){
+  const q=modsSearchEl.value.trim().toLowerCase();
+  const shown=mods.filter(m=>!q||(m.name+' '+m.author+' '+m.kind+' '+m.description).toLowerCase().includes(q));
+  const empty='<div class="lang-empty">No matches</div>';
+  $('modsList').innerHTML=shown.length?shown.map(modRowHTML).join(''):empty;
+  $('modsGrid').innerHTML=shown.length?shown.map(modCardHTML).join(''):empty;
+  $('modsGrid').querySelectorAll('button[data-open]').forEach(btn=>{
+    btn.onclick=()=>openModLink(btn.dataset.open);
+  });
+  $('modsTweaks').innerHTML=TWEAKS.map(t=>
+    '<div class="tweak'+(appliedMods.has(t.id)?' on':'')+'" data-tweak="'+t.id+'">'+
+    '<span class="tw-body"><span class="tw-name">'+esc(t.name)+'</span>'+
+    '<span class="tw-desc">'+esc(t.desc)+'</span></span><span class="toggle"></span></div>').join('');
+  $('modsTweaks').querySelectorAll('.tweak').forEach(el=>{
+    el.onclick=()=>toggleTweak(el.dataset.tweak);
+  });
+  $('modsTotal').textContent=mods.length;
+  $('modsSafe').textContent=mods.filter(m=>m.safe).length;
+  applyModClasses();
+}
+async function loadMods(){
+  try{
+    mods=JSON.parse(await nm_mods());
+    renderMods();
+    if(window.nm_report) nm_report('mods '+mods.length);
+  }catch(e){fail(e);}
+}
+async function openModLink(url){
+  try{ await nm_mods_open(url); }
+  catch(e){ fail(e); }
+}
+
 function switchView(v){
   if(v===currentView)return;
   if(currentView==='files')flushSave(false);
   currentView=v;
-  const files=v==='files';
+  const files=v==='files', langsView=v==='langs', modsView=v==='mods';
   $('sideFiles').classList.toggle('hidden',!files);
-  $('sideLangs').classList.toggle('hidden',files);
+  $('sideLangs').classList.toggle('hidden',!langsView);
+  $('sideMods').classList.toggle('hidden',!modsView);
   $('editorwrap').classList.toggle('hidden',!files);
-  $('langView').classList.toggle('hidden',files);
+  $('langView').classList.toggle('hidden',!langsView);
+  $('modsView').classList.toggle('hidden',!modsView);
   $('tab').classList.toggle('hidden',!files||selected===null);
-  $('langTab').classList.toggle('hidden',files);
+  $('langTab').classList.toggle('hidden',!langsView);
+  $('modsTab').classList.toggle('hidden',!modsView);
   $('actFiles').classList.toggle('on',files);
-  $('actLangs').classList.toggle('on',!files);
-  $('crumb').textContent=files?(selected!==null?titleOf(notes.find(n=>keyOf(n)===selected)?.text||''):''):'Languages';
-  document.title=files?'NeoMind':'NeoMind — Languages';
+  $('actLangs').classList.toggle('on',langsView);
+  $('actMods').classList.toggle('on',modsView);
+  $('crumb').textContent=files
+    ?(selected!==null?titleOf(notes.find(n=>keyOf(n)===selected)?.text||''):'')
+    :(langsView?'Languages':'Mods');
+  document.title=files?'NeoMind':(langsView?'NeoMind — Languages':'NeoMind — Mods');
   if(window.nm_report) nm_report('view '+v);
-  if(!files)loadLanguages();
+  if(langsView)loadLanguages();
+  if(modsView)loadMods();
 }
 
 window.onerror=function(m){message('JS: '+m);};
@@ -659,6 +866,11 @@ $('langSelAll').onclick=()=>setAllLangs(true);
 $('langSelNone').onclick=()=>setAllLangs(false);
 $('langInstallSel').onclick=()=>installLangs([...langSelected]);
 $('langInstallAll').onclick=()=>installLangs(langs.map(l=>l.id));
+$('actMods').onclick=()=>switchView('mods');
+$('modsRefresh').onclick=loadMods;
+$('modsRefreshSide').onclick=loadMods;
+modsSearchEl.oninput=renderMods;
+$('exitFocus').onclick=()=>toggleTweak('focus');
 $('sortBtn').onclick=()=>{
   sortMode=sortMode==='date-desc'?'date-asc':sortMode==='date-asc'?'title':'date-desc';
   message('Sort: '+(sortMode==='date-desc'?'newest first':sortMode==='date-asc'?'oldest first':'by title'));
@@ -698,6 +910,7 @@ document.onkeydown=e=>{
   if(mod&&k==='f'){
     e.preventDefault();
     if(currentView==='langs'){langSearchEl.focus();langSearchEl.select();}
+    else if(currentView==='mods'){modsSearchEl.focus();modsSearchEl.select();}
     else{searchEl.focus();searchEl.select();}
     return;
   }
@@ -737,7 +950,7 @@ document.onkeydown=e=>{
   };
 })();
 
-load(); loadStatus(); loadLanguages();
+applyModClasses(); load(); loadStatus(); loadLanguages(); loadMods();
 </script>
 </body>
 </html>
