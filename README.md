@@ -1,4 +1,5 @@
 # NeoMind
+![Uploading image.png…]()
 
 A small, fast note keeper built as **Rust core + Go CLI + native desktop GUI**.
 
