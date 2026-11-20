@@ -168,6 +168,17 @@ func bindAll(w webview.WebView) {
 		return "ok", nil
 	})
 
+	bind(w, "nm_github_status", func() (string, error) { return githubStatus(), nil })
+	bind(w, "nm_github_device_start", func() (string, error) { return githubDeviceStart() })
+	bind(w, "nm_github_device_poll", func() (string, error) { return githubDevicePoll() })
+	bind(w, "nm_github_commits", func() (string, error) { return githubCommits() })
+	bind(w, "nm_github_signout", func() (string, error) {
+		if err := githubSignOut(); err != nil {
+			return "", err
+		}
+		return "ok", nil
+	})
+
 	bind(w, "nm_lightning", func(enable bool) (string, error) {
 		exe, err := os.Executable()
 		if err != nil {
@@ -325,6 +336,7 @@ func main() {
 	w.SetSize(1180, 760, webview.HintMin)
 	bindAll(w)
 	discordLoad()
+	githubLoad()
 	if os.Getenv("NEOMIND_LIGHT") == "1" {
 		discordDisable()
 	}

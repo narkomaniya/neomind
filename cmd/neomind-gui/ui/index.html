@@ -381,13 +381,23 @@
   .dialog .foot button:hover{background:var(--hover);color:var(--bright)}
   .dialog .foot .ok{background:var(--bright);color:#000;border-color:var(--bright)}
   .dialog .foot .ok:hover{background:#ddd;color:#000}
+  .github-code{font-size:24px;letter-spacing:3px;color:var(--bright);text-align:center;padding:10px;
+    background:var(--editor);border:1px solid var(--border);margin:10px 0;user-select:all}
+  .github-table{width:100%;border-collapse:collapse;font-size:11px;max-height:320px;overflow-y:auto;display:block}
+  .github-table th{text-align:left;padding:6px 8px;color:var(--dim);font-weight:400;
+    border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--panel)}
+  .github-table td{padding:6px 8px;border-bottom:1px solid var(--border);vertical-align:top}
+  .github-table td:first-child{white-space:nowrap;color:var(--dim)}
+  .github-table a{color:var(--bright);text-decoration:none}
+  .github-table a:hover{text-decoration:underline}
+  .github-hours{font-size:20px;color:var(--bright);padding:4px 0 10px}
   .win-actions{position:fixed;top:4px;right:8px;z-index:80;display:flex;gap:2px;padding:2px;background:var(--editor);border:1px solid var(--border);border-radius:4px;opacity:.75}
   .win-actions:hover{opacity:1}
   .win-actions button{width:22px;height:20px;border:0;border-radius:2px;background:transparent;color:var(--muted);font-size:12px;line-height:1;cursor:pointer}
   .win-actions button:hover{background:var(--hover);color:var(--text)}
   body.light-mode .status,body.light-mode .welcome,body.light-mode .palette,
   body.light-mode #actLangs,body.light-mode #actMods,body.light-mode #actSearch,
-  body.light-mode #actFolder,body.light-mode #actAI,body.light-mode #actDiscord,body.light-mode #minimap{display:none !important}
+  body.light-mode #actFolder,body.light-mode #actAI,body.light-mode #actDiscord,body.light-mode #actProfile,body.light-mode #minimap{display:none !important}
   .ai-view{display:flex;flex-direction:column;height:100%;min-height:0}
   .ai-log{flex:1;min-height:0;overflow-y:auto;padding:8px 10px;display:flex;flex-direction:column;gap:8px}
   .ai-msg{padding:7px 9px;border:1px solid var(--border);border-radius:5px;background:var(--editor);font-size:12px;line-height:1.45;white-space:pre-wrap;word-break:break-word;user-select:text}
@@ -420,6 +430,7 @@
     <button class="act" id="actSearch" title="Search (Ctrl+F)"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l5 5"/></svg></button>
     <button class="act" id="actLangs" title="Languages &amp; toolchains"><svg viewBox="0 0 24 24"><path d="M4 7l8-4 8 4-8 4-8-4z"/><path d="M4 7v10l8 4 8-4V7"/><path d="M12 11v8"/><path d="M9 16l3 3 3-3"/></svg></button>
     <button class="act" id="actMods" title="Mods &amp; themes"><svg viewBox="0 0 24 24"><path d="M10 4h5v3a2 2 0 1 0 4 0V4h1v6h-3a2 2 0 1 0 0 4h3v6h-6v-3a2 2 0 1 0-4 0v3H4v-6h3a2 2 0 1 0 0-4H4V4z"/></svg></button>
+    <button class="act bottom" id="actProfile" data-i18n-title="github" title="GitHub activity"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg></button>
     <button class="act bottom" id="actDiscord" data-i18n-title="discord" title="Discord Rich Presence"><svg viewBox="0 0 24 24"><path d="M19.5 5.3A17 17 0 0 0 15.2 4l-.3.6a12 12 0 0 1 3.6 1.8 13 13 0 0 0-11 0A12 12 0 0 1 11.1 4L10.8 3a17 17 0 0 0-4.3 1.3C3.7 9 3 12.6 3.3 16.2a17 17 0 0 0 5.1 2.6l1.1-1.8a11 11 0 0 1-1.7-.8l.4-.3a12 12 0 0 0 10.4 0l.4.3a11 11 0 0 1-1.7.8l1.1 1.8a17 17 0 0 0 5.1-2.6c.4-4.2-.7-7.7-2.9-10.9zM9.3 14.3c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm5.4 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2z"/></svg></button>
     <button class="act bottom" id="actFolder" title="Open data folder"><svg viewBox="0 0 24 24"><path d="M4 6h6l2 2h8v10H4z"/></svg></button>
   </div>
@@ -682,6 +693,19 @@
       <button id="discordPortal" data-i18n="discordPortal">Developer Portal</button>
       <button id="discordNo" data-i18n="cancel">Cancel</button>
       <button class="ok" id="discordYes" data-i18n="discordSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="veil hidden" id="githubDialog">
+  <div class="dialog">
+    <div class="head" data-i18n="githubTitle">GitHub activity</div>
+    <div class="body" id="githubBody"></div>
+    <div class="foot">
+      <button id="githubClose" data-i18n="closeWindow">Close</button>
+      <button id="githubSign" class="ok" data-i18n="githubSignIn">Sign in with GitHub</button>
+      <button id="githubRefresh" class="hidden" data-i18n="githubRefresh">Refresh</button>
+      <button id="githubSignOut" class="hidden" data-i18n="githubSignOut">Sign out</button>
     </div>
   </div>
 </div>
@@ -1250,6 +1274,17 @@ I18N.de.discordOff='Nicht verbunden — Discord öffnen und gültige Application
 I18N.fr.discordOff='Non connecté — ouvrez Discord puis enregistrez un Application ID valide.';
 I18N.zh.discordOff='未连接 — 请打开 Discord 并保存有效的 Application ID。';
 I18N.ja.discordOff='未接続 — Discord を開き、有効な Application ID を保存してください。';
+const GH_I18N={
+ en:{github:'GitHub activity',githubTitle:'GitHub activity',githubHint:'Sign in with GitHub to see your recent commits and coding time in NeoMind.',githubSignIn:'Sign in with GitHub',githubCode:'Your one-time code',githubOpen:'Open GitHub',githubPending:'Waiting for authorization...',githubHours:'Coding time in NeoMind',githubCommits:'Recent commits',githubNoCommits:'No commits found',githubRefresh:'Refresh',githubSignOut:'Sign out',githubError:'Could not load GitHub data',githubDone:'Signed in as',githubRepo:'Repository',githubDate:'Date',githubCommit:'Commit',githubExpire:'The code expired. Sign in again.',githubCoding:'{hours} h {minutes} m'},
+ ru:{github:'Активность GitHub',githubTitle:'Активность GitHub',githubHint:'Войди через GitHub, чтобы увидеть коммиты и время кодинга в NeoMind.',githubSignIn:'Войти через GitHub',githubCode:'Одноразовый код',githubOpen:'Открыть GitHub',githubPending:'Ожидание авторизации...',githubHours:'Время кодинга в NeoMind',githubCommits:'Последние коммиты',githubNoCommits:'Коммитов не найдено',githubRefresh:'Обновить',githubSignOut:'Выйти',githubError:'Не удалось загрузить данные GitHub',githubDone:'Вы вошли как',githubRepo:'Репозиторий',githubDate:'Дата',githubCommit:'Коммит',githubExpire:'Код истёк. Войдите снова.',githubCoding:'{hours} ч {minutes} мин'},
+ uk:{github:'Активність GitHub',githubTitle:'Активність GitHub',githubHint:'Увійди через GitHub, щоб побачити коміти та час кодування в NeoMind.',githubSignIn:'Увійти через GitHub',githubCode:'Одноразовий код',githubOpen:'Відкрити GitHub',githubPending:'Очікування авторизації...',githubHours:'Час кодування в NeoMind',githubCommits:'Останні коміти',githubNoCommits:'Комітів не знайдено',githubRefresh:'Оновити',githubSignOut:'Вийти',githubError:'Не вдалося завантажити дані GitHub',githubDone:'Ви увійшли як',githubRepo:'Репозиторій',githubDate:'Дата',githubCommit:'Коміт',githubExpire:'Код закінчився. Увійдіть знову.',githubCoding:'{hours} год {minutes} хв'},
+ es:{github:'Actividad de GitHub',githubTitle:'Actividad de GitHub',githubHint:'Inicia sesión con GitHub para ver tus commits y el tiempo de codificación en NeoMind.',githubSignIn:'Iniciar sesión con GitHub',githubCode:'Tu código de un solo uso',githubOpen:'Abrir GitHub',githubPending:'Esperando autorización...',githubHours:'Tiempo de codificación en NeoMind',githubCommits:'Commits recientes',githubNoCommits:'No se encontraron commits',githubRefresh:'Actualizar',githubSignOut:'Cerrar sesión',githubError:'No se pudieron cargar los datos de GitHub',githubDone:'Sesión iniciada como',githubRepo:'Repositorio',githubDate:'Fecha',githubCommit:'Commit',githubExpire:'El código caducó. Inicia sesión de nuevo.',githubCoding:'{hours} h {minutes} min'},
+ de:{github:'GitHub-Aktivität',githubTitle:'GitHub-Aktivität',githubHint:'Melde dich mit GitHub an, um deine Commits und die Coding-Zeit in NeoMind zu sehen.',githubSignIn:'Mit GitHub anmelden',githubCode:'Dein Einmalcode',githubOpen:'GitHub öffnen',githubPending:'Warte auf Autorisierung...',githubHours:'Coding-Zeit in NeoMind',githubCommits:'Letzte Commits',githubNoCommits:'Keine Commits gefunden',githubRefresh:'Aktualisieren',githubSignOut:'Abmelden',githubError:'GitHub-Daten konnten nicht geladen werden',githubDone:'Angemeldet als',githubRepo:'Repository',githubDate:'Datum',githubCommit:'Commit',githubExpire:'Der Code ist abgelaufen. Bitte erneut anmelden.',githubCoding:'{hours} Std. {minutes} Min.'},
+ fr:{github:'Activité GitHub',githubTitle:'Activité GitHub',githubHint:'Connectez-vous avec GitHub pour voir vos commits et votre temps de code dans NeoMind.',githubSignIn:'Se connecter avec GitHub',githubCode:'Votre code à usage unique',githubOpen:'Ouvrir GitHub',githubPending:'En attente de l’autorisation...',githubHours:'Temps de code dans NeoMind',githubCommits:'Commits récents',githubNoCommits:'Aucun commit trouvé',githubRefresh:'Actualiser',githubSignOut:'Se déconnecter',githubError:'Impossible de charger les données GitHub',githubDone:'Connecté en tant que',githubRepo:'Dépôt',githubDate:'Date',githubCommit:'Commit',githubExpire:'Le code a expiré. Reconnectez-vous.',githubCoding:'{hours} h {minutes} min'},
+ zh:{github:'GitHub 活动',githubTitle:'GitHub 活动',githubHint:'通过 GitHub 登录，查看最近的提交和在 NeoMind 中的编码时间。',githubSignIn:'通过 GitHub 登录',githubCode:'你的一次性代码',githubOpen:'打开 GitHub',githubPending:'等待授权...',githubHours:'在 NeoMind 中的编码时间',githubCommits:'最近的提交',githubNoCommits:'未找到提交',githubRefresh:'刷新',githubSignOut:'退出登录',githubError:'无法加载 GitHub 数据',githubDone:'已登录为',githubRepo:'仓库',githubDate:'日期',githubCommit:'提交',githubExpire:'代码已过期，请重新登录。',githubCoding:'{hours} 小时 {minutes} 分钟'},
+ ja:{github:'GitHub アクティビティ',githubTitle:'GitHub アクティビティ',githubHint:'GitHub でログインすると、最近のコミットと NeoMind でのコーディング時間を確認できます。',githubSignIn:'GitHub でログイン',githubCode:'ワンタイムコード',githubOpen:'GitHub を開く',githubPending:'認証を待機中...',githubHours:'NeoMind でのコーディング時間',githubCommits:'最近のコミット',githubNoCommits:'コミットが見つかりません',githubRefresh:'更新',githubSignOut:'ログアウト',githubError:'GitHub データを読み込めませんでした',githubDone:'ログイン中',githubRepo:'リポジトリ',githubDate:'日付',githubCommit:'コミット',githubExpire:'コードの有効期限が切れました。再度ログインしてください。',githubCoding:'{hours} 時間 {minutes} 分'}
+};
+for(const loc of Object.keys(GH_I18N))Object.assign(I18N[loc],GH_I18N[loc]);
 let uiLocale=localStorage.getItem('nm_locale')||'en';
 if(!SUPPORTED_LOCALES.includes(uiLocale))uiLocale='en';
 function t(key,vars){
@@ -1262,6 +1297,7 @@ const I18N_NODES={
  actLangs:['title','act.languages'],actMods:['title','act.mods'],actFolder:['title','act.openData'],
  actAI:['title','ai'],aiNew:['title','aiNew'],aiSend:['title','aiSend'],aiInput:['placeholder','aiPlaceholder'],
  actDiscord:['title','discord'],discordNo:['text','cancel'],discordYes:['text','discordSave'],discordPortal:['text','discordPortal'],
+ actProfile:['title','github'],githubClose:['text','closeWindow'],githubSign:['text','githubSignIn'],githubRefresh:['text','githubRefresh'],githubSignOut:['text','githubSignOut'],
  newBtn:['title','newFileShortcut'],newTop:['title','newFileShortcut'],folderNew:['title','newProject'],
  folderFileNew:['title','newFile'],sortBtn:['title','sort'],tabClose:['title','close'],
  search:['placeholder','filter'],folderFilter:['placeholder','filterFolders'],
@@ -2545,6 +2581,99 @@ $('actDiscord').onclick=openDiscordDialog;
 $('discordNo').onclick=closeDiscordDialog;
 $('discordYes').onclick=saveDiscord;
 $('discordPortal').onclick=()=>{try{nm_mods_open('https://discord.com/developers/applications');}catch(e){fail(e);}};
+
+const CODING_KEY='nm_coding_ms';
+let codingMs=parseInt(localStorage.getItem(CODING_KEY)||'0',10)||0;
+let codingTick=Date.now();
+function trackCoding(){
+  const now=Date.now(), elapsed=now-codingTick;
+  codingTick=now;
+  if(elapsed>0&&elapsed<60000&&document.visibilityState==='visible'){
+    codingMs+=elapsed;
+    localStorage.setItem(CODING_KEY,String(codingMs));
+  }
+}
+setInterval(trackCoding,10000);
+window.addEventListener('beforeunload',trackCoding);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')trackCoding();});
+function codingLabel(){
+  const mins=Math.floor(codingMs/60000);
+  return t('githubCoding',{hours:Math.floor(mins/60),minutes:mins%60});
+}
+let ghPoll=null;
+function ghLink(url,label){
+  return '<a href="#" data-url="'+esc(url)+'">'+esc(label)+'</a>';
+}
+function bindGhLinks(){
+  $('githubBody').querySelectorAll('a[data-url]').forEach(a=>{
+    a.onclick=e=>{e.preventDefault();try{nm_mods_open(a.dataset.url);}catch(err){fail(err);}};
+  });
+}
+async function githubCommitsHTML(){
+  try{
+    const rows=JSON.parse(await nm_github_commits());
+    if(!rows.length)return '<div class="body">'+esc(t('githubNoCommits'))+'</div>';
+    let html='<table class="github-table"><thead><tr><th>'+esc(t('githubRepo'))+'</th><th>'+esc(t('githubCommit'))+'</th><th>'+esc(t('githubDate'))+'</th></tr></thead><tbody>';
+    rows.forEach(r=>{
+      html+='<tr><td>'+esc(r.repo)+'</td><td>'+ghLink(r.url,r.message)+' <span style="color:var(--dim)">'+esc(r.sha)+'</span></td><td>'+esc(String(r.date||'').slice(0,10))+'</td></tr>';
+    });
+    return html+'</tbody></table>';
+  }catch(e){return '<div class="body">'+esc(t('githubError'))+': '+esc(String(e))+'</div>';}
+}
+async function renderGithub(){
+  let s={authorized:false,login:''};
+  try{s=JSON.parse(await nm_github_status());}catch(e){}
+  $('githubSign').classList.toggle('hidden',!!s.authorized);
+  $('githubRefresh').classList.toggle('hidden',!s.authorized);
+  $('githubSignOut').classList.toggle('hidden',!s.authorized);
+  if(!s.authorized){
+    $('githubBody').innerHTML='<div class="body">'+esc(t('githubHint'))+'</div>';
+    return;
+  }
+  $('githubBody').innerHTML='<div class="body">'+esc(t('githubDone'))+' <b>'+esc(s.login)+'</b></div>'+
+    '<div class="body" style="padding-bottom:0">'+esc(t('githubHours'))+'</div>'+
+    '<div class="github-hours" style="padding-left:18px">'+esc(codingLabel())+'</div>'+
+    '<div class="body" style="padding-bottom:0">'+esc(t('githubCommits'))+'</div>'+
+    '<div id="ghCommits" class="body" style="padding-top:4px">…</div>';
+  const commits=await githubCommitsHTML();
+  const box=$('ghCommits');
+  if(box){box.innerHTML=commits;bindGhLinks();}
+}
+async function githubPoll(){
+  try{
+    const r=JSON.parse(await nm_github_device_poll());
+    if(r.status==='pending'){const el=$('ghPollStatus');if(el)el.textContent=t('githubPending');return;}
+    clearInterval(ghPoll);ghPoll=null;
+    if(r.status==='ok'){message(t('githubDone')+' '+r.login);await renderGithub();}
+    else{const el=$('ghPollStatus');if(el)el.textContent=t('githubExpire');}
+  }catch(e){
+    clearInterval(ghPoll);ghPoll=null;
+    const el=$('ghPollStatus');if(el)el.textContent=String(e);
+  }
+}
+async function githubStart(){
+  try{
+    const d=JSON.parse(await nm_github_device_start());
+    $('githubBody').innerHTML='<div class="body">'+esc(t('githubHint'))+'</div>'+
+      '<div class="body" style="padding-bottom:0">'+esc(t('githubCode'))+'</div>'+
+      '<div class="github-code">'+esc(d.user_code)+'</div>'+
+      '<div class="body" style="padding-top:0"><a href="#" id="ghOpenUrl">'+esc(t('githubOpen'))+'</a></div>'+
+      '<div class="body" id="ghPollStatus">'+esc(t('githubPending'))+'</div>';
+    $('ghOpenUrl').onclick=e=>{e.preventDefault();try{nm_mods_open(d.verification_uri);}catch(err){fail(err);}};
+    try{nm_mods_open(d.verification_uri);}catch(err){}
+    clearInterval(ghPoll);
+    ghPoll=setInterval(githubPoll,Math.max(3,d.interval||5)*1000);
+  }catch(e){fail(e);}
+}
+function closeGithubDialog(){
+  $('githubDialog').classList.add('hidden');
+  if(ghPoll){clearInterval(ghPoll);ghPoll=null;}
+}
+$('actProfile').onclick=async()=>{$('githubDialog').classList.remove('hidden');trackCoding();await renderGithub();};
+$('githubClose').onclick=closeGithubDialog;
+$('githubSign').onclick=githubStart;
+$('githubRefresh').onclick=async()=>{trackCoding();await renderGithub();};
+$('githubSignOut').onclick=async()=>{try{await nm_github_signout();await renderGithub();}catch(e){fail(e);}};
 
 async function boot(){
   try{
