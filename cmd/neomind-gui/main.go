@@ -152,6 +152,10 @@ func bindAll(w webview.WebView) {
 		return "ok", nil
 	})
 
+	bind(w, "nm_ai_models", func() (string, error) { return nmAIModels() })
+	bind(w, "nm_ai_new", func() (string, error) { return nmAINew() })
+	bind(w, "nm_ai_ask", func(text, model string) (string, error) { return nmAIAsk(text, model) })
+
 	bind(w, "nm_lightning", func(enable bool) (string, error) {
 		exe, err := os.Executable()
 		if err != nil {

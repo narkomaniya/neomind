@@ -387,7 +387,23 @@
   .win-actions button:hover{background:var(--hover);color:var(--text)}
   body.light-mode .status,body.light-mode .welcome,body.light-mode .palette,
   body.light-mode #actLangs,body.light-mode #actMods,body.light-mode #actSearch,
-  body.light-mode #actFolder,body.light-mode #minimap{display:none !important}
+  body.light-mode #actFolder,body.light-mode #actAI,body.light-mode #minimap{display:none !important}
+  .ai-view{display:flex;flex-direction:column;height:100%;min-height:0}
+  .ai-log{flex:1;min-height:0;overflow-y:auto;padding:8px 10px;display:flex;flex-direction:column;gap:8px}
+  .ai-msg{padding:7px 9px;border:1px solid var(--border);border-radius:5px;background:var(--editor);font-size:12px;line-height:1.45;white-space:pre-wrap;word-break:break-word;user-select:text}
+  .ai-msg.user{border-color:#4d78b8;background:rgba(77,120,184,.12)}
+  .ai-msg.bot b{color:var(--bright);font-weight:600}
+  .ai-msg .who{display:block;font-size:10px;opacity:.6;margin-bottom:3px;letter-spacing:.04em}
+  .ai-empty{margin:auto;text-align:center;opacity:.55;font-size:12px;line-height:1.5;padding:12px}
+  .ai-bar{display:flex;gap:5px;align-items:center;padding:6px 8px;border-top:1px solid var(--border)}
+  .ai-bar select{flex:1;min-width:0;background:var(--editor);color:var(--text);border:1px solid var(--border);border-radius:3px;padding:4px;font-size:11px}
+  .ai-compose{display:flex;gap:5px;padding:6px 8px 9px;border-top:1px solid var(--border)}
+  .ai-compose textarea{flex:1;min-width:0;resize:none;height:54px;background:var(--editor);color:var(--text);border:1px solid var(--border);border-radius:3px;padding:6px;font:inherit;font-size:12px;outline:none}
+  .ai-compose textarea:focus{border-color:var(--bright)}
+  .ai-compose button{width:34px;background:var(--bright);color:#000;border:0;border-radius:3px;cursor:pointer;font-size:15px}
+  .ai-compose button:disabled{opacity:.45;cursor:default}
+  .ai-file{display:flex;align-items:center;gap:5px;padding:0 9px 5px;font-size:10px;opacity:.75}
+  .ai-file input{accent-color:var(--bright)}
 </style>
 </head>
 <body>
@@ -400,6 +416,7 @@
   <div class="activity">
     <button class="act on" id="actFiles" title="Explorer"><svg viewBox="0 0 24 24"><path d="M4 4h6l2 2h8v12H4z"/></svg></button>
     <button class="act" id="actFolders" title="Folders"><svg viewBox="0 0 24 24"><path d="M3 6h7l2 2h9v11H3z"/><path d="M3 10h18"/></svg></button>
+    <button class="act" id="actAI" data-i18n-title="ai" title="AI Assistant"><svg viewBox="0 0 24 24"><path d="M12 2l1.7 6.3L20 10l-6.3 1.7L12 18l-1.7-6.3L4 10l6.3-1.7z"/><path d="M19 16l.7 2.3L22 19l-2.3.7L19 22l-.7-2.3L16 19l2.3-.7z"/></svg></button>
     <button class="act" id="actSearch" title="Search (Ctrl+F)"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l5 5"/></svg></button>
     <button class="act" id="actLangs" title="Languages &amp; toolchains"><svg viewBox="0 0 24 24"><path d="M4 7l8-4 8 4-8 4-8-4z"/><path d="M4 7v10l8 4 8-4V7"/><path d="M12 11v8"/><path d="M9 16l3 3 3-3"/></svg></button>
     <button class="act" id="actMods" title="Mods &amp; themes"><svg viewBox="0 0 24 24"><path d="M10 4h5v3a2 2 0 1 0 4 0V4h1v6h-3a2 2 0 1 0 0 4h3v6h-6v-3a2 2 0 1 0-4 0v3H4v-6h3a2 2 0 1 0 0-4H4V4z"/></svg></button>
@@ -433,6 +450,26 @@
       <div class="searchbox"><span></span><input id="folderFilter" placeholder="Filter folders" spellcheck="false"></div>
       <div class="tree" id="folderTree"></div>
       <button class="tree-new" id="folderAddRoot">+ New project</button>
+    </div>
+
+    <div class="view-col hidden" id="sideAI">
+      <div class="side-title">
+        <span data-i18n="ai">AI Assistant</span>
+        <div class="side-actions">
+          <button class="mini" id="aiNew" data-i18n-title="aiNew" title="New chat"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+        </div>
+      </div>
+      <div class="ai-view">
+        <div class="ai-bar">
+          <select id="aiModel" title="Model"></select>
+        </div>
+        <div class="ai-log" id="aiLog"><div class="ai-empty" id="aiEmpty" data-i18n="aiEmpty">Ask anything about your code.</div></div>
+        <label class="ai-file"><input type="checkbox" id="aiIncludeFile" checked><span data-i18n="aiIncludeFile">Attach current file</span></label>
+        <div class="ai-compose">
+          <textarea id="aiInput" data-i18n-placeholder="aiPlaceholder" placeholder="Ask AI..." spellcheck="false"></textarea>
+          <button id="aiSend" data-i18n-title="aiSend" title="Send">↑</button>
+        </div>
+      </div>
     </div>
 
     <div class="view-col hidden" id="sideLangs">
@@ -1124,6 +1161,39 @@ I18N.zh.minimize='最小化'; I18N.ja.minimize='最小化';
 I18N.en.closeWindow='Close'; I18N.ru.closeWindow='Закрыть'; I18N.uk.closeWindow='Закрити';
 I18N.es.closeWindow='Cerrar'; I18N.de.closeWindow='Schliessen'; I18N.fr.closeWindow='Fermer';
 I18N.zh.closeWindow='关闭'; I18N.ja.closeWindow='閉じる';
+I18N.en.ai='AI Assistant'; I18N.ru.ai='AI-помощник'; I18N.uk.ai='AI-помічник';
+I18N.es.ai='Asistente IA'; I18N.de.ai='KI-Assistent'; I18N.fr.ai='Assistant IA';
+I18N.zh.ai='AI 助手'; I18N.ja.ai='AI アシスタント';
+I18N.en.aiNew='New chat'; I18N.ru.aiNew='Новый чат'; I18N.uk.aiNew='Новий чат';
+I18N.es.aiNew='Nuevo chat'; I18N.de.aiNew='Neuer Chat'; I18N.fr.aiNew='Nouveau chat';
+I18N.zh.aiNew='新对话'; I18N.ja.aiNew='新しいチャット';
+I18N.en.aiEmpty='Ask anything about your code.'; I18N.ru.aiEmpty='Спросите что угодно о вашем коде.';
+I18N.uk.aiEmpty='Запитайте будь-що про ваш код.'; I18N.es.aiEmpty='Pregunta lo que quieras sobre tu código.';
+I18N.de.aiEmpty='Frag alles über deinen Code.'; I18N.fr.aiEmpty='Posez vos questions sur votre code.';
+I18N.zh.aiEmpty='询问任何关于代码的问题。'; I18N.ja.aiEmpty='コードについて何でも聞いてください。';
+I18N.en.aiIncludeFile='Attach current file'; I18N.ru.aiIncludeFile='Прикрепить текущий файл';
+I18N.uk.aiIncludeFile='Прикріпити поточний файл'; I18N.es.aiIncludeFile='Adjuntar archivo actual';
+I18N.de.aiIncludeFile='Aktuelle Datei anhängen'; I18N.fr.aiIncludeFile='Joindre le fichier actuel';
+I18N.zh.aiIncludeFile='附加当前文件'; I18N.ja.aiIncludeFile='現在のファイルを添付';
+I18N.en.aiPlaceholder='Ask AI...'; I18N.ru.aiPlaceholder='Спросите ИИ...'; I18N.uk.aiPlaceholder='Запитайте ШІ...';
+I18N.es.aiPlaceholder='Pregunta a la IA...'; I18N.de.aiPlaceholder='KI fragen...'; I18N.fr.aiPlaceholder='Demander à l’IA...';
+I18N.zh.aiPlaceholder='询问 AI...'; I18N.ja.aiPlaceholder='AI に質問...';
+I18N.en.aiSend='Send'; I18N.ru.aiSend='Отправить'; I18N.uk.aiSend='Надіслати';
+I18N.es.aiSend='Enviar'; I18N.de.aiSend='Senden'; I18N.fr.aiSend='Envoyer';
+I18N.zh.aiSend='发送'; I18N.ja.aiSend='送信';
+I18N.en.aiThinking='Thinking...'; I18N.ru.aiThinking='Думает...'; I18N.uk.aiThinking='Думає...';
+I18N.es.aiThinking='Pensando...'; I18N.de.aiThinking='Denkt nach...'; I18N.fr.aiThinking='Réflexion...';
+I18N.zh.aiThinking='思考中...'; I18N.ja.aiThinking='考え中...';
+I18N.en.aiError='AI is unavailable. Is OpenCode installed and signed in?';
+I18N.ru.aiError='ИИ недоступен. Установлен ли OpenCode и выполнен ли вход?';
+I18N.uk.aiError='ШІ недоступний. Чи встановлено OpenCode та виконано вхід?';
+I18N.es.aiError='IA no disponible. ¿Está OpenCode instalado y con sesión iniciada?';
+I18N.de.aiError='KI nicht verfügbar. Ist OpenCode installiert und angemeldet?';
+I18N.fr.aiError='IA indisponible. OpenCode est-il installé et connecté ?';
+I18N.zh.aiError='AI 不可用。请确认已安装并登录 OpenCode。';
+I18N.ja.aiError='AI を利用できません。OpenCode がインストールされ、ログイン済みですか？';
+I18N.en.you='You'; I18N.ru.you='Вы'; I18N.uk.you='Ви'; I18N.es.you='Tú';
+I18N.de.you='Du'; I18N.fr.you='Vous'; I18N.zh.you='你'; I18N.ja.you='あなた';
 let uiLocale=localStorage.getItem('nm_locale')||'en';
 if(!SUPPORTED_LOCALES.includes(uiLocale))uiLocale='en';
 function t(key,vars){
@@ -1134,6 +1204,7 @@ function t(key,vars){
 const I18N_NODES={
  actFiles:['title','act.explorer'],actFolders:['title','act.folders'],actSearch:['title','act.search'],
  actLangs:['title','act.languages'],actMods:['title','act.mods'],actFolder:['title','act.openData'],
+ actAI:['title','ai'],aiNew:['title','aiNew'],aiSend:['title','aiSend'],aiInput:['placeholder','aiPlaceholder'],
  newBtn:['title','newFileShortcut'],newTop:['title','newFileShortcut'],folderNew:['title','newProject'],
  folderFileNew:['title','newFile'],sortBtn:['title','sort'],tabClose:['title','close'],
  search:['placeholder','filter'],folderFilter:['placeholder','filterFolders'],
@@ -1822,8 +1893,64 @@ async function openModLink(url){
   catch(e){ fail(e); }
 }
 
+let aiModelsLoaded=false, aiBusy=false;
+async function loadAIModels(){
+  if(aiModelsLoaded||!window.nm_ai_models)return;
+  aiModelsLoaded=true;
+  try{
+    const list=JSON.parse(await nm_ai_models());
+    const sel=$('aiModel'); sel.replaceChildren();
+    if(!list.length){
+      const o=document.createElement('option');o.textContent=t('aiError');sel.appendChild(o);
+      return;
+    }
+    const saved=localStorage.getItem('nm_ai_model')||'';
+    list.forEach(m=>{
+      const o=document.createElement('option');
+      o.value=m.id+':'+m.providerID;o.textContent=m.name;sel.appendChild(o);
+    });
+    if(saved&&[...sel.options].some(o=>o.value===saved))sel.value=saved;
+    sel.onchange=()=>localStorage.setItem('nm_ai_model',sel.value);
+  }catch(e){aiModelsLoaded=false;message(t('aiError'));}
+}
+function aiBubble(role,text){
+  const empty=$('aiEmpty');if(empty)empty.remove();
+  const d=document.createElement('div');d.className='ai-msg '+(role==='user'?'user':'bot');
+  const who=document.createElement('span');who.className='who';who.textContent=role==='user'?t('you'):t('ai');
+  const body=document.createElement('div');body.textContent=text;
+  d.appendChild(who);d.appendChild(body);
+  $('aiLog').appendChild(d);$('aiLog').scrollTop=$('aiLog').scrollHeight;
+  return d;
+}
+async function aiNewChat(){
+  if(aiBusy||!window.nm_ai_new)return;
+  try{
+    await nm_ai_new();
+    $('aiLog').replaceChildren();
+    const empty=document.createElement('div');empty.className='ai-empty';empty.id='aiEmpty';empty.textContent=t('aiEmpty');
+    $('aiLog').appendChild(empty);
+  }catch(e){fail(e);}
+}
+async function aiSend(){
+  if(aiBusy||!window.nm_ai_ask)return;
+  const input=$('aiInput'),text=input.value.trim();
+  if(!text)return;
+  input.value='';aiBusy=true;$('aiSend').disabled=true;
+  aiBubble('user',text);
+  const wait=aiBubble('bot',t('aiThinking'));
+  let prompt=text;
+  if($('aiIncludeFile').checked&&selected!==null){
+    const n=notes.find(x=>keyOf(x)===selected);
+    if(n&&n.text)prompt='[File: '+noteName(n)+']\n'+String(n.text).slice(0,6000)+'\n\n[Question]\n'+text;
+  }
+  try{
+    const answer=await nm_ai_ask(prompt,$('aiModel').value||'');
+    wait.lastChild.textContent=answer;
+  }catch(e){wait.lastChild.textContent=t('aiError')+'\n'+String(e&&e.message||e);}
+  aiBusy=false;$('aiSend').disabled=false;input.focus();
+}
 function crumbForView(v){
-  const files=v==='files'||v==='folders';
+  const files=v==='files'||v==='folders'||v==='ai';
   const folderView=v==='folders';
   $('crumb').textContent=files
     ?(selected!==null?titleOf(notes.find(n=>keyOf(n)===selected)):'')
@@ -1836,10 +1963,11 @@ function switchView(v){
   if(currentView==='files'||currentView==='folders')flushSave(false);
   const prev=currentView;
   currentView=v;
-  const files=v==='files', folderView=v==='folders', langsView=v==='langs', modsView=v==='mods';
-  const editorView=files||folderView;
+  const files=v==='files', folderView=v==='folders', langsView=v==='langs', modsView=v==='mods', aiView=v==='ai';
+  const editorView=files||folderView||aiView;
   $('sideFiles').classList.toggle('hidden',!files);
   $('sideFolders').classList.toggle('hidden',!folderView);
+  $('sideAI').classList.toggle('hidden',!aiView);
   $('sideLangs').classList.toggle('hidden',!langsView);
   $('sideMods').classList.toggle('hidden',!modsView);
   $('editorwrap').classList.toggle('hidden',!editorView);
@@ -1850,6 +1978,8 @@ function switchView(v){
   $('modsTab').classList.toggle('hidden',!modsView);
   $('actFiles').classList.toggle('on',files);
   $('actFolders').classList.toggle('on',folderView);
+  $('actAI').classList.toggle('on',aiView);
+  if(aiView)loadAIModels();
   $('actLangs').classList.toggle('on',langsView);
   $('actMods').classList.toggle('on',modsView);
   if(prev==='langs'){$('langList').replaceChildren();$('langGrid').replaceChildren();}
@@ -2162,6 +2292,10 @@ function renderPalette(){
 $('newBtn').onclick=create; $('newTop').onclick=create; $('welcomeNew').onclick=create;
 $('tabClose').onclick=closeEditor;
 $('actFolders').onclick=()=>switchView('folders');
+$('actAI').onclick=()=>switchView('ai');
+$('aiNew').onclick=aiNewChat;
+$('aiSend').onclick=aiSend;
+$('aiInput').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();aiSend();}};
 $('folderNew').onclick=openProjectDialog;
 $('folderAddRoot').onclick=openProjectDialog;
 $('folderFileNew').onclick=()=>openFileDialog('');
