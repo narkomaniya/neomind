@@ -6,13 +6,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
 	"github.com/narkomaniya/neomind/internal/core"
 )
 
-const cliVersion = "0.1.0"
+const cliVersion = "0.2.0"
 
 var noColor = os.Getenv("NO_COLOR") != "" || os.Getenv("TERM") == "dumb"
 
@@ -39,6 +42,7 @@ func usage() {
 	fmt.Println("  neomind note list [--json]  показать заметки")
 	fmt.Println("  neomind note clear [--yes]  очистить хранилище")
 	fmt.Println("  neomind doctor              проверить установку")
+	fmt.Println("  neomind gui                 открыть desktop-приложение")
 	fmt.Println("  neomind version             версия CLI и ядра")
 	fmt.Println()
 	fmt.Println(dim("Переменные: NEOMIND_CORE — путь к neomind-core, NO_COLOR — без цвета."))
@@ -169,6 +173,29 @@ func cmdDoctor() int {
 	return code
 }
 
+func openGUI() int {
+	name := "neomind-gui"
+	if runtime.GOOS == "windows" {
+		name += ".exe"
+	}
+	exe, err := os.Executable()
+	if err != nil {
+		die(err)
+	}
+	path := filepath.Join(filepath.Dir(exe), name)
+	if _, err := os.Stat(path); err != nil {
+		die(fmt.Errorf("GUI binary not found: %s (run scripts/build.*)", path))
+	}
+	cmd := exec.Command(path)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		die(err)
+	}
+	return 0
+}
+
 func main() {
 	args := os.Args[1:]
 	if len(args) == 0 {
@@ -193,6 +220,8 @@ func main() {
 		os.Exit(cmdNote(args[1:]))
 	case "doctor":
 		os.Exit(cmdDoctor())
+	case "gui":
+		os.Exit(openGUI())
 	default:
 		fmt.Fprintln(os.Stderr, red("unknown command:")+" "+args[0])
 		fmt.Fprintln(os.Stderr, dim("try: neomind help"))

@@ -1,49 +1,69 @@
 # NeoMind
 
-A tiny, fast note keeper built as **Rust core + Go CLI**.
+A small, fast note keeper built as **Rust core + Go CLI + native desktop GUI**.
 
-Version **0.1.0** is intentionally small and convenient: build once, get two
-binaries in `dist/`, and the CLI finds the core automatically. The product
-behaviour is a placeholder for what comes next — say the word and we shape it.
+Version **0.2.0** ships three binaries: a Rust core with all storage logic, a Go
+CLI for scripts and diagnostics, and a Go/WebView desktop window with a proper
+interface. The CLI and GUI never link against Rust directly — they call
+`neomind-core <op> [args...]`, which answers with one JSON line. This keeps the
+build portable.
 
-## Layout
+## What you get
 
-```text
-rust/                 # Rust library + thin JSON command binary (neomind-core)
-cmd/neomind/          # Go CLI (user-facing commands)
-internal/core/        # Go client: finds and calls the Rust core
-scripts/build.*       # one-command build for Windows / POSIX
-.github/workflows/ci.yml
-```
+| Binary | Purpose |
+| --- | --- |
+| `neomind-core` | Rust storage + JSON protocol (notes, search-ready CRUD) |
+| `neomind` | Go CLI: `status`, `note add/list/clear`, `doctor`, `version`, `gui` |
+| `neomind-gui` | Native desktop window (WebView2 on Windows, WebKit on macOS, GTK on Linux) |
 
-The CLI never links against Rust. It calls `neomind-core <op> [args...]`, which
-answers with one JSON line. This keeps the build portable on all three OSes.
-
-## Build
+## Install on a Windows laptop
 
 ```powershell
-# Windows
+# one-time: build, copy to %LOCALAPPDATA%\NeoMind, create Start Menu + Desktop shortcuts
+powershell -ExecutionPolicy Bypass -File scripts\install.ps1 -Run
+```
+
+After that just press **Win** and type **NeoMind**, or double-click the desktop
+shortcut. The CLI is added to your user PATH, so a new terminal can run `neomind help`.
+
+To rebuild and reinstall:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\build.ps1
+powershell -ExecutionPolicy Bypass -File scripts\install.ps1
+```
+
+## Build manually
+
+```powershell
+# Windows (needs MinGW gcc/g++ for the WebView GUI)
 powershell -ExecutionPolicy Bypass -File scripts\build.ps1
 ```
 
 ```sh
-# Linux / macOS
+# Linux / macOS (GUI built only when GTK + WebKit headers are installed)
 sh scripts/build.sh
 ```
 
-Output:
+Output in `dist/`. Keep the binaries together: the CLI/GUI find the core next to
+themselves. Override with `NEOMIND_CORE=/path/to/neomind-core`.
 
-```text
-dist/neomind          # or neomind.exe on Windows
-dist/neomind-core     # or neomind-core.exe
-```
+## GUI
 
-Keep them together. Override discovery with `NEOMIND_CORE=/path/to/neomind-core`.
+- note list with search and live preview
+- multiline editor with **auto-save** (1.2 s) and Ctrl+S
+- create (Ctrl+N), delete, open storage folder
+- empty state, toasts, keyboard hints
 
-## Use
+Notes live in `~/.neomind/notes.txt` (`%USERPROFILE%\.neomind\notes.txt`) as
+`id<TAB>escaped text` lines — easy to back up. `NEOMIND_DATA_DIR` redirects the
+storage location.
+
+## CLI
 
 ```text
 neomind                       show help
+neomind gui                   open the desktop app
 neomind status [--json]       core version, note count, data dir
 neomind note add <text>       add a note
 neomind note list [--json]    list notes
@@ -52,12 +72,9 @@ neomind doctor                check installation
 neomind version               CLI + core versions
 ```
 
-Notes live in `~/.neomind/notes.txt` (`%USERPROFILE%\.neomind\notes.txt` on
-Windows) as `timestamp<TAB>text` lines — easy to inspect or back up.
-
 `NO_COLOR=1` disables colours; `--json` gives machine-readable output.
 
 ## Roadmap
 
-Everything after v0.1 is waiting for your spec. The current split (Rust logic,
-Go UX) is meant to survive a much bigger product.
+The product behaviour beyond notes is waiting for your spec. The split (Rust
+logic, Go UX) is meant to survive a much bigger application.

@@ -1,13 +1,15 @@
-//! Тонкий протокол для Go-CLI: одна команда -> одна JSON-строка.
-//! Go не знает про Rust-типы, Rust не знает про UX — только JSON.
+//! Тонкий протокол для Go-CLI и GUI: одна команда -> одна JSON-строка.
 
-use neomind_core::{note_add, note_clear, notes_json, status_json, VERSION};
+use neomind_core::{
+    json_escape, note_add, note_clear, note_delete, note_list, note_update, notes_json,
+    status_json, VERSION,
+};
 
 fn ok(op: &str, extra: &str) -> String {
     if extra.is_empty() {
         format!("{{\"ok\":true,\"operation\":\"{}\"}}", op)
     } else {
-        format!("{{\"ok\":true,\"operation\":\"{}\",{} }}", op, extra)
+        format!("{{\"ok\":true,\"operation\":\"{}\",{}}}", op, extra)
     }
 }
 
@@ -15,8 +17,13 @@ fn fail(op: &str, err: &str) -> String {
     format!(
         "{{\"ok\":false,\"operation\":\"{}\",\"error\":\"{}\"}}",
         op,
-        neomind_core::json_escape(err)
+        json_escape(err)
     )
+}
+
+fn parse_id(s: Option<&String>) -> Result<u64, String> {
+    s.and_then(|v| v.parse().ok())
+        .ok_or_else(|| "invalid note id".to_string())
 }
 
 fn main() {
@@ -25,14 +32,25 @@ fn main() {
     let line = match op {
         "version" => ok("version", &format!("\"version\":\"{}\"", VERSION)),
         "status" => status_json(),
-        "note_add" => {
-            let text = args[1..].join(" ").trim().to_string();
-            match note_add(&text) {
-                Ok(n) => ok("note_add", &format!("\"count\":{}", n)),
-                Err(e) => fail("note_add", &e),
-            }
-        }
+        "note_add" => match note_add(&args[1..].join(" ")) {
+            Ok(id) => ok(
+                "note_add",
+                &format!("\"id\":{},\"count\":{}", id, note_list().len()),
+            ),
+            Err(e) => fail("note_add", &e),
+        },
         "note_list" => notes_json(),
+        "note_update" => match parse_id(args.get(1)) {
+            Ok(id) => match note_update(id, &args[2..].join(" ")) {
+                Ok(()) => ok("note_update", &format!("\"id\":{}", id)),
+                Err(e) => fail("note_update", &e),
+            },
+            Err(e) => fail("note_update", &e),
+        },
+        "note_delete" => match parse_id(args.get(1)).and_then(|id| note_delete(id).map(|_| id)) {
+            Ok(id) => ok("note_delete", &format!("\"id\":{}", id)),
+            Err(e) => fail("note_delete", &e),
+        },
         "note_clear" => match note_clear() {
             Ok(()) => ok("note_clear", ""),
             Err(e) => fail("note_clear", &e),

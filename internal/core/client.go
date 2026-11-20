@@ -10,13 +10,42 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
 // Note — одна запись из хранилища ядра.
 type Note struct {
-	TS   int64  `json:"ts"`
-	Text string `json:"text"`
+	ID      int64  `json:"id"`
+	TS      int64  `json:"ts"`
+	Created int64  `json:"created"`
+	Text    string `json:"text"`
+}
+
+// CreatedMillis возвращает время создания в миллисекундах.
+// Старые записи ядра могли хранить секунды в поле ts.
+func (n Note) CreatedMillis() int64 {
+	if n.Created > 0 {
+		return n.Created
+	}
+	if n.ID > 0 {
+		if n.ID < 1_000_000_000_000 {
+			return n.ID * 1000
+		}
+		return n.ID
+	}
+	if n.TS < 1_000_000_000_000 {
+		return n.TS * 1000
+	}
+	return n.TS
+}
+
+// Key — стабильный идентификатор заметки.
+func (n Note) Key() int64 {
+	if n.ID != 0 {
+		return n.ID
+	}
+	return n.TS
 }
 
 // Response — общий вид ответа neomind-core.
@@ -28,8 +57,9 @@ type Response struct {
 	Core      string `json:"core,omitempty"`
 	CLI       string `json:"cli,omitempty"`
 	Notes     []Note `json:"notes,omitempty"`
-	Count     int    `json:"count"`
-	DataDir   string `json:"data_dir"`
+	Count     int    `json:"count,omitempty"`
+	DataDir   string `json:"data_dir,omitempty"`
+	ID        int64  `json:"id,omitempty"`
 }
 
 func coreName() string {
@@ -88,4 +118,45 @@ func Call(args ...string) (Response, error) {
 		return out, errors.New(out.Error)
 	}
 	return out, nil
+}
+
+// DataDir возвращает папку хранилища (совпадает с логикой Rust-ядра).
+func DataDir() string {
+	if p := strings.TrimSpace(os.Getenv("NEOMIND_DATA_DIR")); p != "" {
+		return p
+	}
+	home, _ := os.UserHomeDir()
+	if runtime.GOOS == "windows" {
+		if u := os.Getenv("USERPROFILE"); u != "" {
+			home = u
+		}
+	}
+	return filepath.Join(home, ".neomind")
+}
+
+func Status() (Response, error) { return Call("status") }
+
+func List() ([]Note, error) {
+	r, err := Call("note_list")
+	return r.Notes, err
+}
+
+func Add(text string) (int64, error) {
+	r, err := Call("note_add", text)
+	return r.ID, err
+}
+
+func Update(id int64, text string) error {
+	_, err := Call("note_update", strconv.FormatInt(id, 10), text)
+	return err
+}
+
+func Delete(id int64) error {
+	_, err := Call("note_delete", strconv.FormatInt(id, 10))
+	return err
+}
+
+func Clear() error {
+	_, err := Call("note_clear")
+	return err
 }
