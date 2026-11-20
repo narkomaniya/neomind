@@ -3,7 +3,7 @@
 
 A small, fast note keeper built as **Rust core + Go CLI + native desktop GUI**.
 
-Version **0.5.0** ships three binaries: a Rust core with all storage logic, a Go
+Version **1.0.0** ships three binaries: a Rust core with all storage logic, a Go
 CLI for scripts and diagnostics, and a Go/WebView desktop window with a proper
 interface, a language/toolchain installer and a VS Code-style Extensions catalog.
 The CLI and GUI never link against Rust directly — they call
