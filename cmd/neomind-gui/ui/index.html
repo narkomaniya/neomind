@@ -1356,7 +1356,9 @@ function applyI18n(){
   if($('exEmptyText'))$('exEmptyText').innerHTML='<b>'+esc(t('extensions'))+'</b>'+esc(t('extEmptyBody'))+
     '<br>'+esc(t('referenceOnly'));
   updateCount(); crumbForView(currentView);
-  render(); renderFolderTree(); renderLangs(); renderModsList(); renderDetail();
+  render(); renderFolderTree();
+  if(currentView==='langs')renderLangs();
+  if(currentView==='mods'){renderModsList();renderDetail();}
   document.title=t('app.notes');
   $('uiLang').value=uiLocale;
   if(window.nm_set_title)nm_set_title(t('app.notes'));
@@ -2575,7 +2577,7 @@ async function openDiscordDialog(){
   }catch(e){}
   refreshDiscordStatus();
   clearInterval(discordTimer);
-  discordTimer=setInterval(refreshDiscordStatus,4000);
+  discordTimer=setInterval(refreshDiscordStatus,10000);
 }
 function closeDiscordDialog(){
   $('discordDialog').classList.add('hidden');
@@ -2605,7 +2607,7 @@ function trackCoding(){
     localStorage.setItem(CODING_KEY,String(codingMs));
   }
 }
-setInterval(trackCoding,10000);
+setInterval(trackCoding,30000);
 window.addEventListener('beforeunload',trackCoding);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')trackCoding();});
 function codingLabel(){
@@ -2733,7 +2735,7 @@ async function boot(){
   }catch(e){}
   const sel=$('uiLang');if(sel)sel.value=uiLocale;
   applyModClasses(); applyI18n(); load(); loadStatus(); discordPush();
-  setTimeout(checkAppUpdate,4000); setInterval(checkAppUpdate,30*60*1000);
+  setTimeout(checkAppUpdate,4000);
 }
 boot();
 </script>

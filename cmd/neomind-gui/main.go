@@ -338,6 +338,13 @@ func main() {
 	go func() { _ = server.Serve(listener) }()
 	defer server.Close()
 
+	// Keep the embedded browser lean: no GPU process, extensions or background
+	// network work. Existing flags (used for debugging) are left untouched.
+	if os.Getenv("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS") == "" {
+		_ = os.Setenv("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS",
+			"--disable-gpu --disable-extensions --disable-background-networking --disable-features=Translate,BackForwardCache,MediaRouter --renderer-process-limit=1")
+	}
+
 	w := webview.New(false)
 	defer w.Destroy()
 	setWindowIcon(w, debug)
