@@ -168,6 +168,10 @@ func bindAll(w webview.WebView) {
 		return "ok", nil
 	})
 
+	bind(w, "nm_startup_status", func() (string, error) { return startupStatus() })
+	bind(w, "nm_startup_enable", func() (string, error) { return startupEnable() })
+	bind(w, "nm_startup_disable", func() (string, error) { return startupDisable() })
+
 	bind(w, "nm_app_update_check", func() (string, error) { return appUpdateCheck() })
 	bind(w, "nm_app_update_apply", func(downloadURL, shaURL, version string) (string, error) {
 		return appUpdateApply(downloadURL, shaURL, version)
